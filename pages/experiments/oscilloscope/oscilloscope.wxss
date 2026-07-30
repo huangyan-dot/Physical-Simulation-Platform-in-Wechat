@@ -1,0 +1,135 @@
+/* pages/experiments/oscilloscope/oscilloscope.wxss */
+
+.experiment-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--bg);
+}
+
+.canvas-wrap {
+  position: relative;
+  flex-shrink: 0;
+  background: #050a05;
+}
+
+.scope-canvas {
+  display: block;
+  width: 100%;
+}
+
+.screen-label {
+  position: absolute;
+  top: 12rpx;
+  right: 16rpx;
+  color: rgba(0, 255, 0, 0.7);
+  font-size: 24rpx;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+}
+
+.control-panel {
+  flex: 1;
+  padding: 20rpx 24rpx;
+  box-sizing: border-box;
+}
+
+.params-card {
+  margin-bottom: 20rpx;
+}
+
+.panel-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  margin-bottom: 24rpx;
+}
+
+.param-row {
+  display: flex;
+  gap: 20rpx;
+}
+
+.param-item {
+  margin-bottom: 20rpx;
+}
+
+.param-item.half {
+  flex: 1;
+}
+
+.param-label {
+  display: block;
+  font-size: 26rpx;
+  color: var(--text);
+  margin-bottom: 10rpx;
+}
+
+.param-input {
+  width: 100%;
+  height: 72rpx;
+  padding: 0 16rpx;
+  background: #f8f9fa;
+  border-radius: 10rpx;
+  font-size: 28rpx;
+  box-sizing: border-box;
+}
+
+.mode-tabs {
+  display: flex;
+  gap: 16rpx;
+}
+
+.mode-tab {
+  flex: 1;
+  text-align: center;
+  padding: 16rpx 0;
+  background: #f0f0f0;
+  border-radius: 10rpx;
+  font-size: 26rpx;
+  color: var(--text-light);
+}
+
+.mode-tab.active {
+  background: var(--primary);
+  color: #fff;
+}
+
+.formula-hint {
+  margin-top: 20rpx;
+  text-align: center;
+  font-size: 24rpx;
+  color: var(--text-light);
+  font-family: 'Courier New', monospace;
+}
+
+.reading-row {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid var(--border);
+  font-size: 26rpx;
+}
+
+.reading-row.header {
+  font-weight: 600;
+  color: var(--text-light);
+  border-bottom: 2rpx solid var(--border);
+}
+
+.reading-row text,
+.reading-row input {
+  flex: 1;
+  text-align: center;
+}
+
+.reading-input {
+  height: 56rpx;
+  background: #f8f9fa;
+  border-radius: 8rpx;
+}
+
+.submit-btn {
+  margin-top: 32rpx;
+  width: 100%;
+}

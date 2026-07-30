@@ -1,0 +1,74 @@
+<!-- pages/login/login.wxml -->
+<view class="container login-container">
+  <view class="login-header">
+    <view class="logo">🔬</view>
+    <view class="title">物理实验 3D 模拟</view>
+    <view class="subtitle">大学生物理实验虚拟仿真平台</view>
+  </view>
+
+  <!-- 微信登录 -->
+  <view wx:if="{{mode === 'login'}}" class="login-body">
+    <button
+      class="btn btn-primary login-btn"
+      bindtap="handleLogin"
+      disabled="{{loading}}"
+    >
+      {{loading ? '登录中...' : '微信一键登录'}}
+    </button>
+    <view class="tips">
+      <text>登录即代表同意《用户协议》和《隐私政策》</text>
+    </view>
+
+    <view class="mock-area">
+      <view class="mock-divider">
+        <text class="mock-divider-text">—— 无后端？前端调试 ——</text>
+      </view>
+      <button class="btn btn-outline mock-btn" bindtap="handleMockLogin">
+        跳过登录（仅前端调试用）
+      </button>
+    </view>
+  </view>
+
+  <!-- 补全信息 -->
+  <view wx:if="{{mode === 'complete'}}" class="complete-body card">
+    <view class="form-title">补全学籍信息</view>
+    <view class="form-item">
+      <text class="label">姓名</text>
+      <input
+        class="input"
+        placeholder="请输入真实姓名"
+        value="{{form.name}}"
+        bindinput="onInput"
+        data-field="name"
+      />
+    </view>
+
+    <view class="form-item">
+      <text class="label">学号</text>
+      <input
+        class="input"
+        placeholder="请输入学号"
+        value="{{form.student_no}}"
+        bindinput="onInput"
+        data-field="student_no"
+      />
+    </view>
+
+    <view class="form-item">
+      <text class="label">班级</text>
+      <picker bindchange="onClassChange" value="{{classIndex}}" range="{{classList}}" range-key="name">
+        <view class="picker {{form.class_id ? '' : 'placeholder'}}">
+          {{form.class_id ? classList[classIndex].name : '请选择班级'}}
+        </view>
+      </picker>
+    </view>
+
+    <button
+      class="btn btn-primary submit-btn"
+      bindtap="handleComplete"
+      disabled="{{loading}}"
+    >
+      {{loading ? '保存中...' : '保存并进入'}}
+    </button>
+  </view>
+</view>
