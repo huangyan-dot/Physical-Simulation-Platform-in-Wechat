@@ -1,0 +1,74 @@
+<!-- pages/index/index.wxml -->
+<view class="container">
+  <!-- 顶部欢迎区 -->
+  <view class="welcome-card card">
+    <view class="welcome-text">
+      <text class="hello">你好，{{userInfo.name || userInfo.student_no || '同学'}}</text>
+      <text class="role" wx:if="{{userInfo.role}}">{{roleText[userInfo.role]}}</text>
+    </view>
+    <view class="stats">
+      <view class="stat-item">
+        <text class="stat-num">{{progress.total || 0}}</text>
+        <text class="stat-label">实验总数</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-num">{{progress.passed || 0}}</text>
+        <text class="stat-label">已通过</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-num">{{progress.bestScore || 0}}</text>
+        <text class="stat-label">最高分</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 实验关卡列表 -->
+  <view class="section-title">实验关卡</view>
+
+  <view wx:if="{{loading}}" class="loading-state">
+    <view class="loading-icon"></view>
+    <text>加载实验中...</text>
+  </view>
+
+  <view wx:elif="{{loadError}}" class="empty-state">
+    <text class="empty-icon">⚠️</text>
+    <text>{{loadError}}</text>
+    <button class="retry-btn" size="mini" bindtap="onRetry">重试</button>
+  </view>
+
+  <view wx:elif="{{levels.length === 0}}" class="empty-state">
+    <text class="empty-icon">📚</text>
+    <text>暂无实验关卡</text>
+  </view>
+
+  <view wx:else class="level-list">
+    <view
+      wx:for="{{levels}}"
+      wx:key="id"
+      class="level-card card {{item.status === 'locked' ? 'locked' : ''}}"
+      bindtap="onLevelTap"
+      data-id="{{item.id}}"
+      data-status="{{item.status}}"
+      data-experiment="{{item.experiment_code}}"
+    >
+      <view class="level-header">
+        <view class="level-icon">{{item.icon}}</view>
+        <view class="level-info">
+          <text class="level-name">{{item.name}}</text>
+          <text class="level-desc">{{item.description}}</text>
+        </view>
+        <view class="level-status">
+          <text wx:if="{{item.status === 'passed'}}" class="status-passed">已通过</text>
+          <text wx:elif="{{item.status === 'in_progress'}}" class="status-progress">进行中</text>
+          <text wx:elif="{{item.status === 'locked'}}" class="status-locked">🔒 未解锁</text>
+          <text wx:else class="status-unlocked">可开始</text>
+        </view>
+      </view>
+
+      <view class="level-meta">
+        <text class="difficulty">难度：{{item.difficultyStars}}</text>
+        <text class="score" wx:if="{{item.best_score > 0}}">最佳：{{item.best_score}}分</text>
+      </view>
+    </view>
+  </view>
+</view>

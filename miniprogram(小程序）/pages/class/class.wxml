@@ -1,0 +1,132 @@
+<!-- pages/class/class.wxml -->
+<view class="container">
+  <!-- 学生：加入班级 -->
+  <view wx:if="{{!canManage}}" class="card create-card">
+    <button class="btn btn-primary" bindtap="showJoinModal">
+      🔑 加入班级
+    </button>
+  </view>
+
+  <!-- 教师/管理员：创建班级 -->
+  <view wx:if="{{canManage}}" class="card create-card">
+    <view class="section-title">创建班级</view>
+    <view class="form-item">
+      <input
+        class="input"
+        placeholder="请输入班级名称"
+        value="{{newClassName}}"
+        bindinput="onClassNameInput"
+      />
+    </view>
+    <button class="btn btn-primary" bindtap="createClass" disabled="{{loading}}">
+      {{loading ? '创建中...' : '创建班级'}}
+    </button>
+  </view>
+
+  <!-- 班级列表 -->
+  <view class="section-title">{{canManage ? '我管理的班级' : '我的班级'}}</view>
+
+  <view wx:if="{{loadingList}}" class="loading-state">
+    <text>加载中...</text>
+  </view>
+
+  <view wx:elif="{{loadError}}" class="empty-state">
+    <text class="empty-icon">⚠️</text>
+    <text>{{loadError}}</text>
+    <button class="retry-btn" size="mini" bindtap="loadClasses">重试</button>
+  </view>
+
+  <view wx:elif="{{classes.length === 0}}" class="empty-state">
+    <text class="empty-icon">🏫</text>
+    <text>{{canManage ? '暂无管理的班级' : '暂未加入任何班级'}}</text>
+  </view>
+
+  <view wx:else class="class-list">
+    <view wx:for="{{classes}}" wx:key="id" class="class-card card">
+      <view class="class-header">
+        <text class="class-name">{{item.name}}</text>
+        <text class="class-code-tag" bindtap="copyCode" data-code="{{item.code}}">码: {{item.code}}</text>
+      </view>
+
+      <view class="class-stats">
+        <text>教师：{{item.teacher_name || '-'}}</text>
+        <text>成员 {{item.member_count || 0}} 人</text>
+      </view>
+
+      <!-- 教师操作 -->
+      <view wx:if="{{canManage}}" class="class-actions">
+        <button class="action-btn" size="mini" type="primary" bindtap="showMembers" data-id="{{item.id}}">查看成员</button>
+        <button class="action-btn" size="mini" bindtap="goPublishAssignment" data-id="{{item.id}}" data-name="{{item.name}}">发布作业</button>
+        <button class="action-btn danger" size="mini" type="warn" bindtap="deleteClass" data-id="{{item.id}}">删除</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 学生：加入班级弹窗 -->
+  <view wx:if="{{showJoinModal}}" class="modal-mask" bindtap="closeModal">
+    <view class="modal-content" catchtap="preventBubble">
+      <view class="modal-title">加入班级</view>
+      <view class="form-item">
+        <text class="label">班级码</text>
+        <input
+          class="input"
+          placeholder="请输入 6 位班级码"
+          value="{{joinCode}}"
+          bindinput="onJoinCodeInput"
+          maxlength="8"
+        />
+      </view>
+      <view class="modal-actions">
+        <button class="btn btn-outline" bindtap="closeModal">取消</button>
+        <button class="btn btn-primary" bindtap="joinClass" disabled="{{loading}}">
+          {{loading ? '加入中...' : '加入'}}
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 教师：成员列表弹窗 -->
+  <view wx:if="{{showMembersModal}}" class="modal-mask" bindtap="closeModal">
+    <view class="modal-content" catchtap="preventBubble">
+      <view class="modal-title">班级成员</view>
+      <scroll-view scroll-y class="member-list">
+        <view wx:if="{{members.length === 0}}" class="empty-state" style="padding: 60rpx 0;">
+          <text>暂无成员</text>
+        </view>
+        <view wx:for="{{members}}" wx:key="user_id" class="member-row">
+          <view class="member-info">
+            <text class="member-name">{{item.name || '未命名'}}</text>
+            <text class="member-no">{{item.student_no || '-'}}</text>
+          </view>
+          <text class="member-joined">{{item.joined_at}}</text>
+        </view>
+      </scroll-view>
+      <view class="modal-actions">
+        <button class="btn btn-primary" bindtap="closeModal">关闭</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 教师：添加学生弹窗 -->
+  <view wx:if="{{showAddModal}}" class="modal-mask" bindtap="closeModal">
+    <view class="modal-content" catchtap="preventBubble">
+      <view class="modal-title">添加学生到班级</view>
+      <view class="form-item">
+        <text class="label">学生用户 ID</text>
+        <input
+          class="input"
+          placeholder="请输入学生 user_id"
+          value="{{addUserId}}"
+          bindinput="onAddUserIdInput"
+          type="number"
+        />
+      </view>
+      <view class="modal-actions">
+        <button class="btn btn-outline" bindtap="closeModal">取消</button>
+        <button class="btn btn-primary" bindtap="addMember" disabled="{{loading}}">
+          {{loading ? '添加中...' : '添加'}}
+        </button>
+      </view>
+    </view>
+  </view>
+</view>

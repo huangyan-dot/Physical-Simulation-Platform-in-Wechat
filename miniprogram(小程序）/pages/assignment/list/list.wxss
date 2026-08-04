@@ -1,0 +1,63 @@
+/* pages/assignment/list/list.wxss */
+.asg-card {
+  margin-bottom: 24rpx;
+}
+
+.asg-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.asg-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.asg-status {
+  font-size: 24rpx;
+  padding: 6rpx 20rpx;
+  border-radius: 20rpx;
+}
+
+.asg-status.pending {
+  color: #e67e22;
+  background: #fef5e7;
+}
+
+.asg-status.submitted {
+  color: #27ae60;
+  background: #eafaf1;
+}
+
+.asg-status.overdue {
+  color: #e74c3c;
+  background: #fdedec;
+}
+
+.asg-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+  font-size: 26rpx;
+  color: #7f8c8d;
+  margin-bottom: 16rpx;
+}
+
+.asg-score {
+  font-size: 26rpx;
+  color: #3498db;
+  margin-bottom: 16rpx;
+}
+
+.asg-actions {
+  display: flex;
+  gap: 16rpx;
+}
+
+.btn.danger {
+  color: #e74c3c;
+  border-color: #e74c3c;
+}

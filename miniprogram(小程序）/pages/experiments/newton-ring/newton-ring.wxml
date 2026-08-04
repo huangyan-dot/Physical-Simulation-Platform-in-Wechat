@@ -1,0 +1,98 @@
+<!-- pages/experiments/newton-ring/newton-ring.wxml -->
+<view class="experiment-page">
+  <!-- 画布区 -->
+  <view class="canvas-wrap">
+    <canvas
+      type="2d"
+      id="ringCanvas"
+      class="ring-canvas"
+      bindtouchstart="onCanvasTouch"
+      bindtouchmove="onCanvasTouch"
+    ></canvas>
+    <view class="canvas-hint">暗环半径 rₖ = √(kλR)</view>
+  </view>
+
+  <scroll-view class="control-panel" scroll-y enhanced show-scrollbar
+    >
+    <!-- 参数控制 -->
+    <view class="card params-card">
+      <view class="panel-title">实验参数</view>
+
+      <view class="param-item">
+        <view class="param-label">
+          <text>波长 λ</text>
+          <text class="param-value">{{config.wavelength_nm}} nm</text>
+        </view>
+        <slider
+          min="400"
+          max="700"
+          step="1"
+          value="{{config.wavelength_nm}}"
+          bindchange="onWavelengthChange"
+          show-value
+        />
+      </view>
+
+      <view class="param-item">
+        <view class="param-label">
+          <text>曲率半径 R</text>
+          <text class="param-value">{{config.lens_radius_mm}} mm</text>
+        </view>
+        <slider
+          min="500"
+          max="1200"
+          step="5"
+          value="{{config.lens_radius_mm}}"
+          bindchange="onRadiusChange"
+          show-value
+        />
+      </view>
+
+      <view class="param-item">
+        <view class="param-label">
+          <text>鼓轮读数</text>
+          <text class="param-value">{{drumReading.toFixed(2)}} mm</text>
+        </view>
+        <slider
+          min="0"
+          max="10"
+          step="0.01"
+          value="{{drumReading}}"
+          bindchange="onDrumChange"
+          show-value
+        />
+      </view>
+    </view>
+
+    <!-- 读数表 -->
+    <view class="card readings-card">
+      <view class="panel-title">暗环读数</view>
+
+      <view class="reading-row header">
+        <text>k</text>
+        <text>理论半径(mm)</text>
+        <text>测量读数(mm)</text>
+      </view>
+
+      <view
+        wx:for="{{readings}}"
+        wx:key="k"
+        class="reading-row"
+      >
+        <text>{{item.k}}</text>
+        <text>{{item.theoretical.toFixed(3)}}</text>
+        <input
+          class="reading-input"
+          type="digit"
+          value="{{item.measured}}"
+          data-index="{{index}}"
+          bindinput="onReadingInput"
+        />
+      </view>
+
+      <button class="btn btn-primary submit-btn" bindtap="submitReadings" disabled="{{submitting}}">
+        {{submitting ? '提交中...' : '提交读数'}}
+      </button>
+    </view>
+  </scroll-view>
+</view>

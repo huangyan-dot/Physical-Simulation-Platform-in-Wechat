@@ -1,0 +1,55 @@
+<!-- pages/assignment/submissions/submissions.wxml -->
+<view class="container">
+  <view class="section-title">{{title}}</view>
+
+  <view wx:if="{{loading}}" class="loading-state">
+    <text>加载中...</text>
+  </view>
+
+  <view wx:elif="{{loadError}}" class="empty-state">
+    <text class="empty-icon">⚠️</text>
+    <text>{{loadError}}</text>
+    <button class="retry-btn" size="mini" bindtap="onRetry">重试</button>
+  </view>
+
+  <view wx:elif="{{submissions.length === 0}}" class="empty-state">
+    <text class="empty-icon">📄</text>
+    <text>暂无学生</text>
+  </view>
+
+  <view wx:else>
+    <!-- 统计 -->
+    <view class="summary-card card">
+      <view class="summary-item">
+        <text class="summary-num">{{totalCount}}</text>
+        <text class="summary-label">总人数</text>
+      </view>
+      <view class="summary-item">
+        <text class="summary-num">{{submittedCount}}</text>
+        <text class="summary-label">已提交</text>
+      </view>
+      <view class="summary-item">
+        <text class="summary-num">{{passedCount}}</text>
+        <text class="summary-label">已通过</text>
+      </view>
+    </view>
+
+    <view class="section-title">提交明细</view>
+
+    <view wx:for="{{submissions}}" wx:key="user_id" class="sub-card card">
+      <view class="sub-header">
+        <view class="sub-info">
+          <text class="sub-name">{{item.name || '未命名'}}</text>
+          <text class="sub-no">{{item.student_no || '-'}}</text>
+        </view>
+        <text class="sub-status {{item.passed ? 'passed' : (item.attempts > 0 ? 'submitted' : 'not-submitted')}}">
+          {{item.passed ? '已通过' : (item.attempts > 0 ? '未通过' : '未提交')}}
+        </text>
+      </view>
+      <view class="sub-detail">
+        <text wx:if="{{item.attempts > 0}}">最高分：{{item.best_score}} | 尝试 {{item.attempts}} 次</text>
+        <text wx:else>-</text>
+      </view>
+    </view>
+  </view>
+</view>

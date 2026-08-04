@@ -1,0 +1,108 @@
+<!-- pages/login/login.wxml -->
+<view class="container login-container">
+  <view class="login-header">
+    <view class="logo">🔬</view>
+    <view class="title">物理实验 3D 模拟</view>
+    <view class="subtitle">大学生物理实验虚拟仿真平台</view>
+  </view>
+
+  <!-- 微信登录 -->
+  <view wx:if="{{mode === 'login'}}" class="login-body">
+    <!-- 角色选择 -->
+    <view class="role-selector">
+      <view class="role-card {{role === 'student' ? 'active' : ''}}" bindtap="onRoleChange" data-role="student">
+        <view class="role-icon">🎓</view>
+        <view class="role-name">学生</view>
+        <view class="role-desc">做实验、加入班级</view>
+      </view>
+      <view class="role-card {{role === 'teacher' ? 'active' : ''}}" bindtap="onRoleChange" data-role="teacher">
+        <view class="role-icon">👨‍🏫</view>
+        <view class="role-name">教师</view>
+        <view class="role-desc">管理班级、发布作业</view>
+      </view>
+      <view class="role-card {{role === 'admin' ? 'active' : ''}}" bindtap="onRoleChange" data-role="admin">
+        <view class="role-icon">⚙️</view>
+        <view class="role-name">管理员</view>
+        <view class="role-desc">系统管理、邀请码</view>
+      </view>
+    </view>
+
+    <!-- 教师邀请码 -->
+    <view wx:if="{{role === 'teacher'}}" class="invite-area">
+      <input
+        class="invite-input"
+        placeholder="请输入教师邀请码"
+        value="{{inviteCode}}"
+        bindinput="onInviteInput"
+      />
+    </view>
+
+    <!-- 管理员提示 -->
+    <view wx:if="{{role === 'admin'}}" class="invite-area">
+      <view class="admin-hint">管理员账号需由系统预先开通，选择后直接登录即可。</view>
+    </view>
+
+    <button
+      class="btn btn-primary login-btn"
+      bindtap="handleLogin"
+      disabled="{{loading}}"
+    >
+      {{loading ? '登录中...' : '微信一键登录'}}
+    </button>
+    <view class="tips">
+      <text>登录即代表同意《用户协议》和《隐私政策》</text>
+    </view>
+
+    <view class="mock-area">
+      <view class="mock-divider">
+        <text class="mock-divider-text">-- 开发调试 --</text>
+      </view>
+      <button class="btn btn-outline mock-btn" bindtap="handleMockLogin">
+        开发后门登录（{{role === 'admin' ? 'dev_admin' : (role === 'teacher' ? 'dev_teacher' : 'dev_student')}}）
+      </button>
+    </view>
+  </view>
+
+  <!-- 补全信息 -->
+  <view wx:if="{{mode === 'complete'}}" class="complete-body card">
+    <view class="form-title">补全学籍信息</view>
+    <view class="form-item">
+      <text class="label">姓名</text>
+      <input
+        class="input"
+        placeholder="请输入真实姓名"
+        value="{{form.name}}"
+        bindinput="onInput"
+        data-field="name"
+      />
+    </view>
+
+    <view class="form-item">
+      <text class="label">学号</text>
+      <input
+        class="input"
+        placeholder="请输入学号"
+        value="{{form.student_no}}"
+        bindinput="onInput"
+        data-field="student_no"
+      />
+    </view>
+
+    <view class="form-item">
+      <text class="label">班级</text>
+      <picker bindchange="onClassChange" value="{{classIndex}}" range="{{classList}}" range-key="name">
+        <view class="picker {{form.class_id ? '' : 'placeholder'}}">
+          {{form.class_id ? classList[classIndex].name : '请选择班级（可稍后加入）'}}
+        </view>
+      </picker>
+    </view>
+
+    <button
+      class="btn btn-primary submit-btn"
+      bindtap="handleComplete"
+      disabled="{{loading}}"
+    >
+      {{loading ? '保存中...' : '保存并进入'}}
+    </button>
+  </view>
+</view>

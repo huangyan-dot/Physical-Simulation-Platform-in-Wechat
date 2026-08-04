@@ -1,0 +1,90 @@
+<!-- pages/progress/progress.wxml -->
+<view class="container">
+  <!-- 学生视角：个人进度 -->
+  <view wx:if="{{role === 'student'}}">
+    <view class="summary-card card">
+      <view class="summary-item">
+        <text class="summary-num">{{summary.total}}</text>
+        <text class="summary-label">总实验</text>
+      </view>
+      <view class="summary-item">
+        <text class="summary-num">{{summary.passed}}</text>
+        <text class="summary-label">已通过</text>
+      </view>
+      <view class="summary-item">
+        <text class="summary-num">{{summary.avgScore}}</text>
+        <text class="summary-label">平均分</text>
+      </view>
+    </view>
+
+    <view class="section-title">实验成绩</view>
+
+    <view wx:if="{{loadError}}" class="empty-state">
+      <text class="empty-icon">⚠️</text>
+      <text>{{loadError}}</text>
+      <button class="retry-btn" size="mini" bindtap="onRetry">重试</button>
+    </view>
+
+    <view wx:elif="{{!loading && records.length === 0}}" class="empty-state">
+      <text class="empty-icon">📄</text>
+      <text>暂无成绩记录</text>
+    </view>
+
+    <view wx:for="{{records}}" wx:key="id" class="record-card card">
+      <view class="record-header">
+        <text class="record-name">{{item.level_name}}</text>
+        <text class="record-status {{item.status}}">{{statusText[item.status]}}</text>
+      </view>
+      <view class="record-detail">
+        <text>当前分数：{{item.score}}</text>
+        <text>最佳分数：{{item.best_score}}</text>
+        <text>尝试次数：{{item.attempts}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 教师视角：班级成绩 -->
+  <view wx:if="{{role === 'teacher' || role === 'admin'}}">
+    <view class="card">
+      <view class="section-title">班级成绩看板</view>
+      <view class="form-item">
+        <picker bindchange="onClassChange" value="{{classIndex}}" range="{{classes}}" range-key="name">
+          <view class="picker {{selectedClassId ? '' : 'placeholder'}}">
+            {{selectedClassId ? classes[classIndex].name : '请选择班级'}}
+          </view>
+        </picker>
+      </view>
+
+      <view wx:if="{{classStats.avg_score}}" class="class-summary">
+        <view class="stat-box">
+          <text class="stat-value">{{classStats.avg_score}}</text>
+          <text class="stat-label">平均分</text>
+        </view>
+        <view class="stat-box">
+          <text class="stat-value">{{classStats.pass_rate_formatted}}%</text>
+          <text class="stat-label">通过率</text>
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{loadError}}" class="empty-state">
+      <text class="empty-icon">⚠️</text>
+      <text>{{loadError}}</text>
+      <button class="retry-btn" size="mini" bindtap="onRetry">重试</button>
+    </view>
+
+    <view wx:if="{{students.length > 0}}" class="section-title">学生明细</view>
+
+    <view wx:for="{{students}}" wx:key="user_id" class="student-card card">
+      <view class="student-header">
+        <text class="student-name">{{item.name}}</text>
+        <text class="student-no">{{item.student_no}}</text>
+      </view>
+      <view class="student-detail">
+        <text>最高分：{{item.best_score}}</text>
+        <text>尝试：{{item.attempts}} 次</text>
+        <text class="{{item.passed ? 'pass' : 'fail'}}">{{item.passed ? '通过' : '未通过'}}</text>
+      </view>
+    </view>
+  </view>
+</view>

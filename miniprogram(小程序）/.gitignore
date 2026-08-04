@@ -1,0 +1,6 @@
+# 微信开发者工具生成文件
+node_modules/
+miniprogram_npm/
+.DS_Store
+*.log
+.project.config.json.swp

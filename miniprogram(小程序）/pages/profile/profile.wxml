@@ -1,0 +1,32 @@
+<!-- pages/profile/profile.wxml -->
+<view class="container">
+  <view class="user-card card">
+    <view class="avatar">{{userInfo.name ? userInfo.name[0] : '👤'}}</view>
+    <view class="user-info">
+      <text class="user-name">{{userInfo.name || '未设置姓名'}}</text>
+      <text class="user-meta">{{roleText[userInfo.role]}} · {{userInfo.student_no || '未绑定学号'}}</text>
+    </view>
+  </view>
+
+  <view class="menu-list card">
+    <view class="menu-item" bindtap="goToProgress">
+      <text class="menu-icon">📊</text>
+      <text class="menu-text">我的成绩</text>
+      <text class="menu-arrow">></text>
+    </view>
+
+    <view class="menu-item" bindtap="goToClass">
+      <text class="menu-icon">🏫</text>
+      <text class="menu-text">班级管理</text>
+      <text class="menu-arrow">></text>
+    </view>
+
+    <view class="menu-item" bindtap="showAbout">
+      <text class="menu-icon">ℹ️</text>
+      <text class="menu-text">关于</text>
+      <text class="menu-arrow">></text>
+    </view>
+  </view>
+
+  <button class="btn btn-danger logout-btn" bindtap="handleLogout">退出登录</button>
+</view>
