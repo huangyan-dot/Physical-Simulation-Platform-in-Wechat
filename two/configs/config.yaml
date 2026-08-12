@@ -1,0 +1,37 @@
+server:
+  port: 8080
+  mode: debug
+
+mysql:
+  host: 127.0.0.1
+  port: 3306
+  user: physics
+  password: physics123
+  database: physics_lab
+
+redis:
+  addr: 127.0.0.1:6379
+  password: ""
+  db: 0
+
+jwt:
+  secret: "dev-only-secret-change-me"
+  expire_hours: 72
+
+wechat:
+  appid: ""
+  secret: ""
+
+# 开发后门开关：true 时 code 以 dev_ 开头走内置账号、/login 别名可用。
+# 上线前必须设 false（同时填好上方 wechat.appid/secret）。
+allow_dev_backdoor: true
+
+# CORS 跨域：mode=debug 自动放行所有 Origin；此处为上线白名单。
+cors:
+  allow_origins:
+    - "http://localhost:5173"
+
+# 限流（防刷登录与刷分）。单机内存令牌桶，多实例需换 Redis。
+rate_limit:
+  login_per_minute: 30    # /auth/login、/login：每分钟每 IP
+  submit_per_minute: 20   # /progress/submit：每分钟每用户
