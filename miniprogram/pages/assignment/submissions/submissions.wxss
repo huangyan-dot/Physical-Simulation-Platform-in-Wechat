@@ -1,0 +1,200 @@
+/* pages/assignment/submissions/submissions.wxss */
+.summary-card {
+  display: flex;
+  justify-content: space-around;
+  padding: 32rpx 0;
+  margin-bottom: 24rpx;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.summary-num {
+  font-size: 44rpx;
+  font-weight: bold;
+  color: #3498db;
+}
+
+.summary-label {
+  font-size: 24rpx;
+  color: #7f8c8d;
+  margin-top: 8rpx;
+}
+
+.sub-card {
+  margin-bottom: 20rpx;
+}
+
+.sub-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sub-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.sub-name {
+  font-size: 30rpx;
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.sub-no {
+  font-size: 24rpx;
+  color: #95a5a6;
+}
+
+.sub-status {
+  font-size: 24rpx;
+  padding: 6rpx 20rpx;
+  border-radius: 20rpx;
+}
+
+.sub-status.passed {
+  color: #27ae60;
+  background: #eafaf1;
+}
+
+.sub-status.submitted {
+  color: #e67e22;
+  background: #fef5e7;
+}
+
+.sub-status.not-submitted {
+  color: #95a5a6;
+  background: #f4f6f7;
+}
+
+.sub-detail {
+  font-size: 26rpx;
+  color: #7f8c8d;
+  margin-top: 12rpx;
+}
+
+.sd-warn {
+  color: #e67e22;
+}
+
+/* ===== 三项分数 ===== */
+.score-grid {
+  display: flex;
+  margin-top: 20rpx;
+  padding: 18rpx 0;
+  background: #f8f9fa;
+  border-radius: 12rpx;
+}
+
+.sg-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.sg-item::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 15%;
+  height: 70%;
+  width: 1rpx;
+  background: #e0e4e8;
+}
+
+.sg-item:last-child::after {
+  display: none;
+}
+
+.sg-num {
+  font-size: 38rpx;
+  font-weight: bold;
+  color: #2c3e50;
+  font-family: monospace;
+}
+
+.sg-num.undone {
+  color: #bdc3c7;
+}
+
+.sg-item.combo .sg-num {
+  color: #3498db;
+}
+
+.sg-label {
+  font-size: 22rpx;
+  color: #95a5a6;
+  margin-top: 6rpx;
+}
+
+/* ===== 综合比例调节 ===== */
+.weight-card {
+  margin-bottom: 24rpx;
+}
+
+.wc-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 20rpx;
+}
+
+.wc-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.wc-reset {
+  font-size: 24rpx;
+  color: #3498db;
+}
+
+.wc-ratio {
+  display: flex;
+  height: 56rpx;
+  border-radius: 10rpx;
+  overflow: hidden;
+  margin-bottom: 12rpx;
+}
+
+.wc-seg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.wc-seg text {
+  font-size: 22rpx;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.wc-seg.data {
+  background: #3498db;
+}
+
+.wc-seg.quiz {
+  background: #9b59b6;
+}
+
+.wc-tip {
+  font-size: 23rpx;
+  color: #7f8c8d;
+  line-height: 1.6;
+  margin-top: 8rpx;
+}
+
+.wc-save {
+  width: 100%;
+  margin-top: 20rpx;
+}
+

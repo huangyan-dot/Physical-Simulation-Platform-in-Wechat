@@ -1,0 +1,277 @@
+/* app.wxss - 全局样式 */
+page {
+  --primary: #3498db;
+  --primary-dark: #2980b9;
+  --success: #2ecc71;
+  --warning: #f39c12;
+  --danger: #e74c3c;
+  --text: #2c3e50;
+  --text-light: #7f8c8d;
+  --bg: #f5f6fa;
+  --card-bg: #ffffff;
+  --border: #e1e8ed;
+
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  font-size: 28rpx;
+  color: var(--text);
+  background-color: var(--bg);
+  line-height: 1.6;
+}
+
+.container {
+  padding: 24rpx;
+  box-sizing: border-box;
+}
+
+.card {
+  background: var(--card-bg);
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 88rpx;
+  border-radius: 12rpx;
+  font-size: 30rpx;
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+
+.btn:active {
+  opacity: 0.8;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+.btn-success {
+  background: var(--success);
+  color: #fff;
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 2rpx solid var(--primary);
+  color: var(--primary);
+}
+
+.btn-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.title {
+  font-size: 36rpx;
+  font-weight: 600;
+  margin-bottom: 16rpx;
+}
+
+.subtitle {
+  font-size: 28rpx;
+  color: var(--text-light);
+  margin-bottom: 24rpx;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.mt-16 { margin-top: 16rpx; }
+.mt-24 { margin-top: 24rpx; }
+.mb-16 { margin-bottom: 16rpx; }
+.mb-24 { margin-bottom: 24rpx; }
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120rpx 40rpx;
+  color: var(--text-light);
+}
+
+.empty-icon {
+  font-size: 96rpx;
+  margin-bottom: 24rpx;
+}
+
+/* 加载失败后的重试按钮 */
+.retry-btn {
+  margin-top: 32rpx;
+  color: #fff;
+  background: var(--primary, #3498db);
+}
+
+/* ===================== 实验页公共样式 ===================== */
+/* 标签栏 */
+.tab-bar { display: flex; flex-shrink: 0; background: #fff; border-bottom: 1rpx solid var(--border); }
+.tab { flex: 1; text-align: center; padding: 24rpx 0; font-size: 30rpx; color: var(--text-light); position: relative; }
+.tab.active { color: var(--primary); font-weight: 600; }
+.tab.active::after { content: ''; position: absolute; bottom: 0; left: 30%; width: 40%; height: 4rpx; background: var(--primary); border-radius: 2rpx; }
+/* 两段式提交：测量数据没交之前自测标签是锁住的，置灰表示不可点 */
+.tab.locked { color: #bdc3c7; }
+/* min-height:0 让 scroll-view 只占剩余空间并在内部滚动。
+   缺了它，flex 子项按 min-height:auto 被内容撑高，整页一起滑，tab 栏会被顶走。 */
+.pane { flex: 1; min-height: 0; padding: 24rpx; box-sizing: border-box; }
+
+/* 两段式提交的得分卡与权重卡。
+   综合分 = 测量数据 × dataWeight% + 自测 × quizWeight%，各实验页共用同一套样式，
+   所以放在这里而不是各自的页面 wxss 里。 */
+.score-card { background: #eafaf1; }
+.sc-line { font-size: 28rpx; margin-bottom: 10rpx; }
+.sc-num { font-size: 36rpx; font-weight: bold; color: #27ae60; margin-left: 10rpx; }
+
+.weight-card { background: #1a1a2e; margin-bottom: 20rpx; }
+.wc-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 27rpx;
+  color: rgba(255, 255, 255, 0.85);
+  padding: 8rpx 0;
+}
+.wc-w { color: #7ee8fa; font-size: 24rpx; }
+.wc-combo {
+  margin-top: 14rpx;
+  padding-top: 14rpx;
+  border-top: 1rpx solid rgba(255, 255, 255, 0.15);
+  text-align: center;
+  font-size: 34rpx;
+  font-weight: bold;
+  color: #7ee8fa;
+}
+
+/* 误差率结果框：学生自己算出结果并「确认」之后才揭示真值与误差。
+   单摆（g）与牛顿环（R）共用，边框颜色按误差档位变。 */
+.err-box { border-left: 6rpx solid #7f8c8d; }
+.err-box.good { border-left-color: #27ae60; background: #f0fbf4; }
+.err-box.ok   { border-left-color: #2ecc71; background: #f4fbf6; }
+.err-box.warn { border-left-color: #f39c12; background: #fef8ef; }
+.err-box.bad  { border-left-color: #e74c3c; background: #fdf3f2; }
+.err-rate { margin-top: 10rpx; font-size: 34rpx; font-weight: bold; color: var(--text, #2c3e50); }
+.err-cmt { margin-top: 6rpx; font-size: 23rpx; line-height: 1.5; color: #6b7683; }
+
+/* 提醒用的算式行：把公式摆出来，代入和运算仍由学生自己做 */
+.formula-line {
+  background: #f4f6fb;
+  color: #3b4a6b;
+  font-size: 24rpx;
+  font-family: monospace;
+  padding: 16rpx 18rpx;
+  border-radius: 8rpx;
+  margin-bottom: 18rpx;
+  line-height: 1.6;
+}
+
+/* 原理页 */
+.th-title { font-size: 38rpx; font-weight: bold; color: var(--text); margin-bottom: 20rpx; }
+.key-formula { background: #1a1a2e; color: #7ee8fa; font-size: 30rpx; padding: 28rpx 20rpx; border-radius: 12rpx; text-align: center; margin-bottom: 24rpx; font-family: monospace; }
+.th-h { font-size: 30rpx; font-weight: 600; color: var(--primary); margin-bottom: 16rpx; }
+.th-p { font-size: 27rpx; line-height: 1.75; color: var(--text); white-space: pre-wrap; }
+.th-li { font-size: 27rpx; line-height: 1.7; color: var(--text); margin-bottom: 10rpx; }
+.th-app { display: flex; flex-direction: column; padding: 12rpx 0; border-bottom: 1rpx solid var(--border); }
+.th-app-n { font-size: 28rpx; font-weight: 500; color: var(--text); }
+.th-app-d { font-size: 24rpx; color: var(--text-light); margin-top: 6rpx; line-height: 1.6; }
+.caution-card { background: #fef9e7; }
+.go-btn { width: 100%; margin: 32rpx 0 60rpx; }
+
+/* 实验操作区 */
+.side-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24rpx; }
+.side-label { font-size: 28rpx; }
+.side-btns { display: flex; gap: 12rpx; }
+.side-btn { padding: 10rpx 32rpx; border: 2rpx solid var(--border); border-radius: 8rpx; font-size: 26rpx; color: var(--text-light); }
+.side-btn.active { border-color: var(--primary); color: var(--primary); background: #ebf5fb; font-weight: 500; }
+.op-btns { display: flex; gap: 16rpx; }
+.op-btns .btn { flex: 1; }
+
+.form-line { display: flex; align-items: center; gap: 12rpx; margin-bottom: 18rpx; }
+.fl-label { font-size: 27rpx; width: 180rpx; }
+.fl-input { flex: 1; height: 70rpx; padding: 0 16rpx; background: #f8f9fa; border-radius: 8rpx; font-size: 27rpx; }
+.fl-unit { font-size: 25rpx; color: var(--text-light); width: 60rpx; }
+
+.hint-line { font-size: 24rpx; color: var(--text-light); margin-top: 14rpx; line-height: 1.6; }
+.warn-line { font-size: 24rpx; color: #e67e22; margin-top: 10rpx; line-height: 1.6; }
+
+.stopwatch { display: flex; align-items: center; justify-content: space-between; margin-top: 24rpx; padding: 20rpx; background: #1a1a2e; border-radius: 12rpx; }
+.sw-time { font-size: 52rpx; font-weight: bold; color: #7ee8fa; font-family: monospace; }
+.sw-btns { display: flex; gap: 12rpx; }
+
+/* 记录表 */
+.rec-row { display: flex; align-items: center; padding: 14rpx 0; border-bottom: 1rpx solid var(--border); font-size: 26rpx; }
+.rec-row.header { font-weight: 600; color: var(--text-light); border-bottom: 2rpx solid var(--border); }
+.rec-row text { flex: 1; text-align: center; }
+.rec-d { color: var(--primary); font-weight: 600; }
+.rec-del { color: #e74c3c; }
+.avg-line { font-size: 28rpx; color: var(--primary); font-weight: 600; margin-top: 18rpx; text-align: right; }
+
+/* 计算结果 */
+.calc-btn { width: 100%; margin-top: 24rpx; }
+.calc-box { margin-top: 20rpx; padding: 20rpx; background: #f8f9fa; border-radius: 10rpx; }
+.calc-line { font-size: 24rpx; color: var(--text-light); line-height: 1.7; font-family: monospace; }
+.calc-r { font-size: 34rpx; font-weight: bold; color: var(--primary); margin-top: 12rpx; }
+.calc-err { font-size: 26rpx; color: var(--text-light); margin-top: 6rpx; }
+.tip-card { background: #ebf5fb; }
+
+/* 自测页 */
+.quiz-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20rpx; }
+.quiz-title { font-size: 32rpx; font-weight: 600; }
+.quiz-reset { font-size: 26rpx; color: var(--primary); }
+.quiz-score { background: var(--primary); color: #fff; text-align: center; padding: 20rpx; border-radius: 12rpx; font-size: 32rpx; font-weight: bold; margin-bottom: 20rpx; }
+.quiz-card { margin-bottom: 24rpx; }
+.q-head { display: flex; align-items: center; gap: 12rpx; margin-bottom: 14rpx; }
+.q-no { width: 40rpx; height: 40rpx; line-height: 40rpx; text-align: center; background: var(--primary); color: #fff; border-radius: 50%; font-size: 24rpx; }
+.q-type { font-size: 22rpx; color: var(--text-light); background: #f0f0f0; padding: 4rpx 14rpx; border-radius: 6rpx; }
+.q-text { font-size: 28rpx; line-height: 1.7; color: var(--text); margin-bottom: 18rpx; }
+.q-opt { display: flex; align-items: flex-start; padding: 14rpx 0; }
+.q-opt-t { font-size: 27rpx; line-height: 1.6; flex: 1; margin-left: 8rpx; }
+.q-judge { display: flex; gap: 20rpx; }
+.j-btn { flex: 1; text-align: center; padding: 18rpx 0; border: 2rpx solid var(--border); border-radius: 10rpx; font-size: 28rpx; color: var(--text-light); }
+.j-btn.active { border-color: var(--primary); color: var(--primary); background: #ebf5fb; font-weight: 500; }
+.q-calc { display: flex; align-items: center; gap: 12rpx; }
+.q-input { flex: 1; height: 76rpx; padding: 0 20rpx; background: #f8f9fa; border-radius: 10rpx; font-size: 28rpx; }
+.q-unit { font-size: 26rpx; color: var(--text-light); }
+.q-check { width: 100%; margin-top: 18rpx; }
+.q-fb { margin-top: 16rpx; padding: 16rpx; border-radius: 10rpx; font-size: 25rpx; line-height: 1.7; white-space: pre-wrap; }
+.q-fb.right { background: #eafaf1; color: #27ae60; font-weight: 500; }
+.q-fb.hint { background: #fef5e7; color: #b9770e; }
+.q-fb.wrong { background: #fdedec; color: #922b21; }
+.fb-tag { display: inline-block; font-weight: bold; margin-right: 10rpx; }
+.btn.danger { color: #e74c3c; border-color: #e74c3c; }
+
+/* 示波器通道分块 */
+.ch-block { padding: 18rpx 0; border-bottom: 1rpx solid var(--border); }
+.ch-block:last-child { border-bottom: none; }
+.ch-title { font-size: 28rpx; font-weight: 600; color: var(--primary); margin-bottom: 14rpx; }
+.derive-box { display: flex; flex-direction: column; gap: 6rpx; margin-top: 12rpx; padding: 14rpx; background: #f8f9fa; border-radius: 8rpx; }
+.derive-box text { font-size: 26rpx; color: var(--primary); font-weight: 500; }
+.fl-picker { flex: 1; }
+.fl-picker .picker { height: 70rpx; line-height: 70rpx; padding: 0 16rpx; background: #f8f9fa; border-radius: 8rpx; font-size: 27rpx; }

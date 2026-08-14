@@ -1,0 +1,51 @@
+/* pages/assignment/publish/publish.wxss */
+.form-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #2c3e50;
+  margin-bottom: 32rpx;
+}
+
+.picker.static {
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+.form-hint {
+  font-size: 24rpx;
+  color: #95a5a6;
+  margin-top: 8rpx;
+  line-height: 1.6;
+}
+
+/* 综合得分比例条 */
+.ratio-bar {
+  display: flex;
+  height: 56rpx;
+  border-radius: 10rpx;
+  overflow: hidden;
+  margin: 12rpx 0;
+}
+
+.ratio-seg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.ratio-seg text {
+  font-size: 22rpx;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.ratio-seg.data {
+  background: #3498db;
+}
+
+.ratio-seg.quiz {
+  background: #9b59b6;
+}
+

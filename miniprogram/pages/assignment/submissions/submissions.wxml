@@ -1,0 +1,108 @@
+<!-- pages/assignment/submissions/submissions.wxml -->
+<view class="container">
+  <view class="section-title">{{title}}</view>
+
+  <view wx:if="{{loading}}" class="loading-state">
+    <text>加载中...</text>
+  </view>
+
+  <view wx:elif="{{loadError}}" class="empty-state">
+    <text class="empty-icon">⚠️</text>
+    <text>{{loadError}}</text>
+    <button class="retry-btn" size="mini" bindtap="onRetry">重试</button>
+  </view>
+
+  <view wx:elif="{{submissions.length === 0}}" class="empty-state">
+    <text class="empty-icon">📄</text>
+    <text>暂无学生</text>
+  </view>
+
+  <view wx:else>
+    <!-- 统计 -->
+    <view class="summary-card card">
+      <view class="summary-item">
+        <text class="summary-num">{{totalCount}}</text>
+        <text class="summary-label">总人数</text>
+      </view>
+      <view class="summary-item">
+        <text class="summary-num">{{submittedCount}}</text>
+        <text class="summary-label">已提交</text>
+      </view>
+      <view class="summary-item">
+        <text class="summary-num">{{passedCount}}</text>
+        <text class="summary-label">已通过</text>
+      </view>
+      <view class="summary-item">
+        <text class="summary-num">{{avgCombo}}</text>
+        <text class="summary-label">综合均分</text>
+      </view>
+    </view>
+
+    <!-- 综合得分比例调节 -->
+    <view class="card weight-card">
+      <view class="wc-head">
+        <text class="wc-title">综合得分比例</text>
+        <text class="wc-reset" bindtap="resetWeight">恢复默认 60:40</text>
+      </view>
+      <view class="wc-ratio">
+        <view class="wc-seg data" style="flex: {{draftWeight}}">
+          <text>测量数据 {{draftWeight}}%</text>
+        </view>
+        <view class="wc-seg quiz" style="flex: {{100 - draftWeight}}">
+          <text>自测 {{100 - draftWeight}}%</text>
+        </view>
+      </view>
+      <slider min="5" max="100" step="5" value="{{draftWeight}}"
+        bindchanging="onWeightChanging" bindchange="onWeightChange"
+        activeColor="#3498db" block-size="20" />
+      <view wx:if="{{draftWeight !== dataWeight}}" class="wc-tip">
+        当前生效比例为 {{dataWeight}}:{{quizWeight}}，点保存后按 {{draftWeight}}:{{100 - draftWeight}} 重算全班综合分
+      </view>
+      <view wx:else class="wc-tip">当前生效比例：测量数据 {{dataWeight}}% ：自测题目 {{quizWeight}}%</view>
+      <button class="btn btn-primary wc-save" size="mini"
+        bindtap="saveWeight" disabled="{{savingWeight || draftWeight === dataWeight}}">
+        {{savingWeight ? '保存中...' : '保存比例'}}
+      </button>
+    </view>
+
+    <view class="section-title">提交明细</view>
+
+    <view wx:for="{{submissions}}" wx:key="user_id" class="sub-card card">
+      <view class="sub-header">
+        <view class="sub-info">
+          <text class="sub-name">{{item.name || '未命名'}}</text>
+          <text class="sub-no">{{item.student_no || '-'}}</text>
+        </view>
+        <text class="sub-status {{item.passed ? 'passed' : (item.attempts > 0 ? 'submitted' : 'not-submitted')}}">
+          {{item.passed ? '已通过' : (item.attempts > 0 ? '未通过' : '未提交')}}
+        </text>
+      </view>
+
+      <block wx:if="{{item.attempts > 0}}">
+        <!-- 三项分数：测量数据 / 自测题目 / 综合 -->
+        <view class="score-grid">
+          <view class="sg-item">
+            <text class="sg-num">{{item.data_score}}</text>
+            <text class="sg-label">测量数据</text>
+          </view>
+          <view class="sg-item">
+            <text class="sg-num {{item.quiz_done ? '' : 'undone'}}">
+              {{item.quiz_done ? item.quiz_score : '—'}}
+            </text>
+            <text class="sg-label">自测题目</text>
+          </view>
+          <view class="sg-item combo">
+            <text class="sg-num">{{item.combo_score}}</text>
+            <text class="sg-label">综合得分</text>
+          </view>
+        </view>
+        <view class="sub-detail">
+          <text>尝试 {{item.attempts}} 次</text>
+          <text wx:if="{{item.region_label}}"> · 实验地区 {{item.region_label}}</text>
+          <text wx:if="{{!item.quiz_done}}" class="sd-warn"> · 未完成自测</text>
+        </view>
+      </block>
+      <view wx:else class="sub-detail">-</view>
+    </view>
+  </view>
+</view>

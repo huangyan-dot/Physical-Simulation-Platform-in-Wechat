@@ -1,0 +1,59 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/login/login",
+    "pages/class/class",
+    "pages/profile/profile",
+    "pages/experiments/newton-ring/newton-ring",
+    "pages/experiments/oscilloscope/oscilloscope",
+    "pages/experiments/pendulum/pendulum",
+    "pages/progress/progress",
+    "pages/assignment/list/list",
+    "pages/assignment/publish/publish",
+    "pages/assignment/submissions/submissions"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#1a1a2e",
+    "navigationBarTitleText": "物理实验3D模拟",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f5f6fa"
+  },
+  "tabBar": {
+    "custom": true,
+    "color": "#7f8c8d",
+    "selectedColor": "#3498db",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "实验"
+      },
+      {
+        "pagePath": "pages/class/class",
+        "text": "班级"
+      },
+      {
+        "pagePath": "pages/assignment/list/list",
+        "text": "作业"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的"
+      }
+    ]
+  },
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents",
+  "permission": {
+    "scope.userLocation": {
+      "desc": "用于确定你所在县区，按纬度和海拔计算当地重力加速度"
+    }
+  },
+  "requiredPrivateInfos": [
+    "getLocation"
+  ],
+  "requiredBackgroundModes": [],
+  "usingComponents": {}
+}

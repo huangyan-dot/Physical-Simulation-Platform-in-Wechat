@@ -1,0 +1,347 @@
+<!-- pages/experiments/pendulum/pendulum.wxml -->
+<view class="experiment-page">
+  <view class="tab-bar">
+    <view class="tab {{tab === 'theory' ? 'active' : ''}}" bindtap="switchTab" data-tab="theory">原理</view>
+    <view class="tab {{tab === 'experiment' ? 'active' : ''}}" bindtap="switchTab" data-tab="experiment">实验</view>
+    <view class="tab {{tab === 'quiz' ? 'active' : ''}} {{dataSubmitted ? '' : 'locked'}}" bindtap="switchTab" data-tab="quiz">
+      自测{{dataSubmitted ? '' : ' 🔒'}}
+    </view>
+  </view>
+
+  <!-- ========== 原理 ========== -->
+  <scroll-view wx:if="{{tab === 'theory'}}" class="pane" scroll-y>
+    <view wx:if="{{theory}}">
+      <view class="th-title">{{theory.name}}</view>
+      <view class="key-formula">{{theory.keyFormula}}</view>
+
+      <view class="card local-g-card">
+        <view class="th-h">本次实验的当地重力加速度</view>
+        <view class="lg-row">
+          <text class="lg-place">{{region ? region.label : '定位中...'}}</text>
+          <text class="lg-value">{{errorInfo ? errorInfo.gLocal : '待你测出'}}{{errorInfo ? ' m/s²' : ''}}</text>
+        </view>
+        <view class="th-li">
+          纬度 {{region ? region.latitude : '--'}}° · 海拔 {{region ? region.altitude : '--'}} m
+        </view>
+        <text class="th-p">g 随纬度升高而增大（地球自转的离心效应减弱、极半径更小），随海拔升高而减小。所以你要测的不是课本上的 9.8，而是你所在县/区的当地值。这个值会在你算出并确认自己的结果后才公布，先自己动手测。</text>
+      </view>
+
+      <view class="card">
+        <view class="th-h">实验目的</view>
+        <view wx:for="{{theory.purpose}}" wx:key="index" class="th-li">{{index + 1}}. {{item}}</view>
+      </view>
+
+      <view class="card" wx:for="{{theory.principle}}" wx:key="title">
+        <view class="th-h">{{item.title}}</view>
+        <text class="th-p">{{item.content}}</text>
+      </view>
+
+      <view class="card">
+        <view class="th-h">实验仪器</view>
+        <view wx:for="{{theory.apparatus}}" wx:key="name" class="th-app">
+          <text class="th-app-n">{{item.name}}</text>
+          <text class="th-app-d">{{item.desc}}</text>
+        </view>
+      </view>
+
+      <view class="card">
+        <view class="th-h">操作步骤</view>
+        <view wx:for="{{theory.steps}}" wx:key="index" class="th-li">{{index + 1}}. {{item}}</view>
+      </view>
+
+      <view class="card caution-card">
+        <view class="th-h">注意事项</view>
+        <view wx:for="{{theory.cautions}}" wx:key="index" class="th-li">• {{item}}</view>
+      </view>
+
+      <button class="btn btn-primary go-btn" bindtap="switchTab" data-tab="experiment">开始实验</button>
+    </view>
+  </scroll-view>
+
+  <!-- ========== 实验 ========== -->
+  <block wx:if="{{tab === 'experiment'}}">
+    <!-- 上部：3D 单摆装置，可左右滑动看各个角度 -->
+    <view class="stage-wrap" style="height: {{canvasHeight}}px;">
+      <canvas type="2d" id="pendulumCanvas" class="stage-canvas"
+        style="width: {{canvasWidth}}px; height: {{canvasHeight}}px;"
+        bindtouchstart="onCanvasTouchStart" bindtouchmove="onCanvasTouchMove"></canvas>
+
+      <!-- 右上角：实时周期数 -->
+      <view class="period-badge {{timing ? 'counting' : ''}}">
+        <text class="pb-label">周期数</text>
+        <text class="pb-num">{{periodNow}}</text>
+        <text class="pb-total">/ {{periodCount}}</text>
+      </view>
+
+      <!-- 左上角：视角与倍速 -->
+      <view class="stage-tools">
+        <view class="st-item" bindtap="resetView">{{azimuthDeg}}° ⟳</view>
+        <view class="st-item" bindtap="onSpeedTap">{{speedText}}</view>
+      </view>
+
+      <view class="stage-hint">← 左右滑动可环绕观察装置 →</view>
+    </view>
+
+    <view class="stage-note">摆球已放大显示，便于观察直径变化；计算仍按你输入的实际尺寸</view>
+
+    <scroll-view class="control-panel" scroll-y enhanced show-scrollbar>
+      <!-- 地区（当地 g 在确认结果前不显示，避免直接抄答案） -->
+      <view class="card region-card">
+        <view class="rc-top">
+          <view class="rc-left">
+            <text class="rc-label">实验地区（县级）</text>
+            <text class="rc-place">{{region ? region.label : '定位中...'}}</text>
+          </view>
+          <view class="rc-g">
+            <text class="rc-g-hidden">{{errorInfo ? errorInfo.gLocal : '当地 g 待揭示'}}</text>
+            <text wx:if="{{errorInfo}}" class="rc-g-unit">m/s²</text>
+          </view>
+        </view>
+        <view class="rc-btns">
+          <view class="rc-btn" bindtap="openRegionPicker">选择地区</view>
+          <view class="rc-btn" bindtap="relocate">重新定位</view>
+        </view>
+        <view wx:if="{{locateHint}}" class="hint-line">{{locateHint}}</view>
+        <view wx:if="{{!errorInfo}}" class="hint-line">
+          当地重力加速度会在你填写并确认自己算出的 g 之后显示，并给出误差率
+        </view>
+      </view>
+
+      <!-- 步骤1：装置摆长 -->
+      <view class="card">
+        <view class="panel-title">① 装配摆长（上方装置会同步变化）</view>
+        <view class="form-line">
+          <text class="fl-label">悬线长 l</text>
+          <input class="fl-input" type="digit" placeholder="cm" value="{{lineLength}}" bindinput="onLineInput" />
+          <text class="fl-unit">cm</text>
+        </view>
+        <view class="form-line">
+          <text class="fl-label">摆球直径 d</text>
+          <input class="fl-input" type="digit" placeholder="cm" value="{{ballDiameter}}" bindinput="onBallInput" />
+          <text class="fl-unit">cm</text>
+        </view>
+        <view wx:if="{{measuredL}}" class="calc-box">
+          <view class="calc-line">L = l + d/2 = {{lineLength}} + {{ballDiameter}}/2</view>
+          <view class="calc-r">L = {{measuredL}} cm</view>
+        </view>
+        <view wx:else class="hint-line">摆长是悬点到摆球质心的距离，需自己算出</view>
+        <view class="hint-line">改动摆长或摆角会重装装置，已有计时记录将清空</view>
+      </view>
+
+      <!-- 步骤2：起摆并计时 -->
+      <view class="card">
+        <view class="panel-title">② 起摆并计时</view>
+
+        <view class="param-item">
+          <view class="param-label">
+            <text>初始摆角 θ₀</text>
+            <text class="param-value">{{config.angle_deg}}°</text>
+          </view>
+          <slider min="2" max="20" step="1" value="{{config.angle_deg}}" bindchange="onAngleChange" show-value />
+          <view wx:if="{{config.angle_deg > 5}}" class="warn-line">
+            摆角超过 5°，简谐近似误差增大，测得周期会偏长
+          </view>
+        </view>
+
+        <view class="param-item">
+          <view class="param-label">
+            <text>计数周期数 n</text>
+            <text class="param-value">{{periodCount}} 个</text>
+          </view>
+          <slider min="10" max="50" step="10" value="{{periodCount}}" bindchange="onPeriodCountChange" show-value />
+          <view class="hint-line">摆满 n 个周期后，装置与秒表会自动停下</view>
+        </view>
+
+        <view class="param-item">
+          <view class="param-label">
+            <text>计划实验轮数</text>
+            <text class="param-value">{{plannedRounds}} 轮</text>
+          </view>
+          <slider min="1" max="10" step="1" value="{{plannedRounds}}" bindchange="onPlannedRoundsChange" show-value />
+          <view class="hint-line">
+            只是计划：已记录 {{rounds.length}} 轮，想多测就继续，够了随时停
+          </view>
+        </view>
+
+        <button class="btn {{swinging ? 'btn-outline danger' : 'btn-primary'}}" size="mini" bindtap="releaseBall">
+          {{swinging ? '放弃本次' : '拉开并释放摆球'}}
+        </button>
+
+        <view class="stopwatch">
+          <view class="sw-label">{{timing ? '计时中' : (roundDone ? '已停表' : '待释放')}}</view>
+          <view class="sw-time">{{elapsed}} s</view>
+        </view>
+
+        <!-- 摆完一轮：给出秒表读数，学生据此自己算 T 和 g -->
+        <view wx:if="{{roundDone}}" class="run-done">
+          <view class="rd-line">
+            本轮读数：{{lastRun.n}} 个周期共 {{lastRun.t}} s
+          </view>
+          <view class="rd-hint">T = t / n，g = 4π²L / T²，请自己算好后填入下表</view>
+          <button class="btn btn-primary" size="mini" bindtap="addRound">记入数据表（第 {{rounds.length + 1}} 轮）</button>
+        </view>
+        <view wx:else class="hint-line">释放摆球的同时自动起表，摆满 {{periodCount}} 个周期后自动停表</view>
+      </view>
+
+      <!-- 步骤3：学生自己填的数据表 -->
+      <view class="card" wx:if="{{rounds.length > 0}}">
+        <view class="panel-title">③ 实验数据表（由你填写）</view>
+        <view class="dt-head">
+          <text class="dt-c dt-sel"></text>
+          <text class="dt-c dt-rd">轮数</text>
+          <text class="dt-c">初始角度(°)</text>
+          <text class="dt-c">周期 T(s)</text>
+          <text class="dt-c">g(m/s²)</text>
+          <text class="dt-c dt-del"></text>
+        </view>
+        <view wx:for="{{rounds}}" wx:key="round" class="dt-row {{item.selected ? 'picked' : ''}}">
+          <view class="dt-c dt-sel" bindtap="toggleRound" data-index="{{index}}">
+            <text class="dt-check">{{item.selected ? '☑' : '☐'}}</text>
+          </view>
+          <text class="dt-c dt-rd">{{item.round}}</text>
+          <input class="dt-c dt-in" type="digit" value="{{item.angle}}"
+            bindinput="onRoundInput" data-index="{{index}}" data-field="angle" placeholder="—" />
+          <input class="dt-c dt-in" type="digit" value="{{item.period}}"
+            bindinput="onRoundInput" data-index="{{index}}" data-field="period" placeholder="填T" />
+          <input class="dt-c dt-in" type="digit" value="{{item.g}}"
+            bindinput="onRoundInput" data-index="{{index}}" data-field="g" placeholder="填g" />
+          <text class="dt-c dt-del" bindtap="deleteRound" data-index="{{index}}">删</text>
+        </view>
+        <view class="dt-note">
+          勾选你认为合理的数据行用于求平均；秒表读数见上方，周期与 g 都要自己算
+        </view>
+      </view>
+
+      <!-- 步骤4：求平均并确认最终结果 -->
+      <view class="card" wx:if="{{rounds.length > 0}}">
+        <view class="panel-title">④ 计算平均值并确认结果</view>
+        <view class="form-line">
+          <text class="fl-label">g 平均值</text>
+          <input class="fl-input" type="digit" placeholder="自己算出后填入" value="{{avgGInput}}" bindinput="onAvgGInput" />
+          <text class="fl-unit">m/s²</text>
+        </view>
+        <!-- 选用轮次显示在平均值输入框下面 -->
+        <view class="sel-line {{selectedCount ? '' : 'empty'}}">{{selectedLabel}}</view>
+
+        <button class="btn btn-outline calc-btn" size="mini" bindtap="confirmFinalG">
+          确认为最终结果
+        </button>
+
+        <!-- 确认后才揭示当地 g 与误差率 -->
+        <view wx:if="{{errorInfo}}" class="calc-box err-box {{errorInfo.level}}">
+          <view class="calc-r">你的结果 g = {{finalG}} m/s²</view>
+          <view class="calc-err">
+            {{region.label}}当地值 {{errorInfo.gLocal}} m/s²
+          </view>
+          <view class="err-rate">误差率 {{errorInfo.relErr}}%</view>
+          <view class="err-cmt">{{errorInfo.comment}}</view>
+          <view class="hint-line">评分标准：误差 ≤0.3% 得 100，1% 得 90，3% 及格；本实验自动计时，无按表误差</view>
+        </view>
+      </view>
+
+      <view class="card tip-card" wx:if="{{rounds.length === 0}}">
+        <view class="th-h">怎么做</view>
+        <view class="th-li">1. 确认地区正确（当地 g 先不公布，等你算出来再对）</view>
+        <view class="th-li">2. 设好悬线长与球径，算出摆长 L = l + d/2</view>
+        <view class="th-li">3. 定好摆角与计数周期数 n，点「拉开并释放摆球」，自动计时</view>
+        <view class="th-li">4. 停表后读出总时间 t，自己算 T = t/n 和 g = 4π²L/T²，填入数据表</view>
+        <view class="th-li">5. 想测几轮由你决定；测完勾选合理的行，自己算 g 的平均值并确认</view>
+      </view>
+
+      <view wx:if="{{dataSubmitted}}" class="card score-card">
+        <view class="th-h">测量数据已提交</view>
+        <view class="sc-line">测量数据得分 <text class="sc-num">{{dataScore}}</text></view>
+        <view class="hint-line">综合得分 = 测量数据 × {{dataWeight}}% + 自测题目 × {{quizWeight}}%</view>
+        <button class="btn btn-primary calc-btn" size="mini" bindtap="switchTab" data-tab="quiz">进入自测题目</button>
+      </view>
+
+      <button class="btn btn-primary submit-btn" bindtap="submitReadings" disabled="{{submitting || !finalG}}">
+        {{submitting ? '提交中...' : (dataSubmitted ? '重新提交测量数据' : (finalG ? '提交测量数据' : '请先确认最终结果'))}}
+      </button>
+    </scroll-view>
+
+    <!-- 地区选择弹层 -->
+    <view wx:if="{{regionPickerVisible}}" class="modal-mask" bindtap="closeRegionPicker">
+      <!-- catchtap 只为拦住冒泡到遮罩的点击；这里绝不能挂 closeRegionPicker，
+           否则在弹层里滑动选择器时抬手被当成一次 tap，弹层立刻关掉，选择白做 -->
+      <view class="modal-body" catchtap="noop">
+        <view class="modal-title">选择实验地区</view>
+        <picker-view class="region-picker" value="{{pickerValue}}" bindchange="onRegionColumnChange"
+          indicator-style="height: 44px;">
+          <picker-view-column>
+            <view wx:for="{{provinceList}}" wx:key="index" class="pv-item">{{item}}</view>
+          </picker-view-column>
+          <picker-view-column>
+            <view wx:for="{{countyList}}" wx:key="index" class="pv-item">{{item}}</view>
+          </picker-view-column>
+        </picker-view>
+        <view class="modal-btns">
+          <view class="modal-btn" catchtap="closeRegionPicker">取消</view>
+          <view class="modal-btn primary" catchtap="confirmRegion">确定</view>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <!-- ========== 自测 ========== -->
+  <scroll-view wx:if="{{tab === 'quiz'}}" class="pane" scroll-y>
+    <view class="card weight-card">
+      <view class="wc-row">
+        <text>测量数据 {{dataScore}} 分</text>
+        <text class="wc-w">占 {{dataWeight}}%</text>
+      </view>
+      <view class="wc-row">
+        <text>自测题目 {{quizScore === null ? '待完成' : quizScore + ' 分'}}</text>
+        <text class="wc-w">占 {{quizWeight}}%</text>
+      </view>
+      <view wx:if="{{comboScore !== null}}" class="wc-combo">综合得分 {{comboScore}}</view>
+    </view>
+
+    <view class="quiz-head">
+      <text class="quiz-title">自测（{{quizSize}} 题随机抽取）</text>
+      <text class="quiz-reset" bindtap="resetQuiz">换一组</text>
+    </view>
+
+    <view wx:for="{{quiz}}" wx:key="__idx" wx:for-index="qi" wx:for-item="q" class="card quiz-card">
+      <view class="q-head">
+        <text class="q-no">{{qi + 1}}</text>
+        <text class="q-type">{{q.type === 'single' ? '单选' : (q.type === 'judge' ? '判断' : '计算')}}</text>
+      </view>
+      <view class="q-text">{{q.question}}</view>
+
+      <radio-group wx:if="{{q.type === 'single'}}" bindchange="onQuizChoice" data-idx="{{qi}}">
+        <label wx:for="{{q.options}}" wx:for-item="opt" wx:for-index="oi" wx:key="oi" class="q-opt">
+          <radio value="{{oi}}" checked="{{quizAnswers[qi] === oi}}" />
+          <text class="q-opt-t">{{opt}}</text>
+        </label>
+      </radio-group>
+
+      <view wx:elif="{{q.type === 'judge'}}" class="q-judge">
+        <view class="j-btn {{quizAnswers[qi] === true ? 'active' : ''}}"
+          bindtap="onQuizJudge" data-idx="{{qi}}" data-val="true">正确</view>
+        <view class="j-btn {{quizAnswers[qi] === false ? 'active' : ''}}"
+          bindtap="onQuizJudge" data-idx="{{qi}}" data-val="false">错误</view>
+      </view>
+
+      <view wx:else class="q-calc">
+        <input class="q-input" type="digit" placeholder="填写数值"
+          value="{{quizAnswers[qi]}}" bindinput="onQuizInput" data-idx="{{qi}}" />
+        <text class="q-unit">{{q.unit}}</text>
+      </view>
+
+      <button class="btn btn-outline q-check" size="mini" bindtap="checkOne" data-idx="{{qi}}">检查</button>
+
+      <view wx:if="{{quizState[qi] === 'right'}}" class="q-fb right">✓ 答对了</view>
+      <view wx:elif="{{quizState[qi] === 'hint'}}" class="q-fb hint">
+        <text class="fb-tag">提示</text><text>{{q.hint}}</text>
+      </view>
+      <view wx:elif="{{quizState[qi] === 'wrong'}}" class="q-fb wrong">
+        <text class="fb-tag">解析</text><text>{{q.explanation}}</text>
+      </view>
+    </view>
+
+    <button class="btn btn-primary submit-btn" bindtap="submitQuiz" disabled="{{quizSubmitting}}">
+      {{quizSubmitting ? '提交中...' : '提交自测'}}
+    </button>
+  </scroll-view>
+</view>

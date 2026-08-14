@@ -1,0 +1,257 @@
+/* pages/experiments/newton-ring/newton-ring.wxss */
+
+.experiment-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  /* 页面本身不滚动：tab 栏、视场、读数条固定，只有下方面板内部滚动 */
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* ============ 视场 ============ */
+
+.stage-wrap {
+  position: relative;
+  flex-shrink: 0;
+  background: #000;
+}
+
+.ring-canvas {
+  display: block;
+  /* 实际宽高由 wxml 内联 style 按屏幕尺寸设定，
+     canvas 不给显式高度会退化成默认 150px，看起来就是一片灰 */
+}
+
+/* 左右两个 < > ：压在视场上，不占额外高度 */
+.nav-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 76rpx;
+  height: 120rpx;
+  line-height: 120rpx;
+  text-align: center;
+  font-size: 60rpx;
+  /* 纯白 + 加粗 + 黑色描边阴影：视场里明暗环交替，半透明的白箭头压在亮环上就看不见了，
+     必须是不透明白色并带一圈暗影才能在任何背景上都认得出来 */
+  color: #ffffff;
+  font-weight: 700;
+  text-shadow: 0 0 6rpx rgba(0, 0, 0, 0.9), 0 2rpx 4rpx rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.55);
+  border: 2rpx solid rgba(255, 255, 255, 0.75);
+  border-radius: 12rpx;
+}
+
+.nav-arrow.left { left: 12rpx; }
+.nav-arrow.right { right: 12rpx; }
+
+/* 按下时反白，给一个明确的点击反馈 */
+.nav-arrow:active {
+  background: rgba(255, 255, 255, 0.9);
+  color: #000000;
+  text-shadow: none;
+}
+
+.stage-hint {
+  position: absolute;
+  bottom: 10rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 20rpx;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 6rpx 14rpx;
+  border-radius: 8rpx;
+  white-space: nowrap;
+}
+
+/* ============ 读数条 ============ */
+
+.read-bar {
+  flex-shrink: 0;
+  padding: 16rpx 24rpx;
+  background: #fff;
+  border-bottom: 1rpx solid var(--border);
+}
+
+.side-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.side-label {
+  font-size: 26rpx;
+  color: var(--text-light);
+  margin-right: 16rpx;
+}
+
+.side-btns { display: flex; flex: 1; }
+
+.side-btn {
+  flex: 1;
+  text-align: center;
+  padding: 12rpx 0;
+  font-size: 26rpx;
+  border: 1rpx solid var(--border);
+  color: var(--text-light);
+}
+
+.side-btn:first-child { border-radius: 8rpx 0 0 8rpx; }
+.side-btn:last-child { border-radius: 0 8rpx 8rpx 0; border-left: none; }
+
+.side-btn.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+.ro-title {
+  font-size: 26rpx;
+  color: #1a9d5a;
+  font-weight: 600;
+  margin-bottom: 10rpx;
+}
+
+.ro-grid { display: flex; }
+
+.ro-cell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10rpx 0;
+  background: #f5f9f6;
+  border-radius: 8rpx;
+  margin-right: 12rpx;
+}
+
+.ro-cell:last-child { margin-right: 0; }
+
+.ro-k { font-size: 22rpx; color: var(--text-light); }
+
+.ro-v {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: var(--primary);
+  margin-top: 4rpx;
+}
+
+.ro-note {
+  margin-top: 10rpx;
+  font-size: 20rpx;
+  color: var(--text-light);
+  line-height: 1.5;
+}
+
+/* 未对准时的黄色小字提示 */
+.read-warn {
+  font-size: 22rpx;
+  color: #a8730a;
+  background: #fff8e1;
+  border: 1rpx solid #ffe6a0;
+  border-radius: 8rpx;
+  padding: 12rpx 14rpx;
+  line-height: 1.5;
+}
+
+/* ============ 下方面板 ============ */
+
+/* min-height:0 是关键：flex 子项默认 min-height:auto，scroll-view 会被内容
+   撑高而不是内部滚动，结果整页超过 100vh 一起往上滑，把 tab、视场、读数条顶走。 */
+.control-panel {
+  flex: 1;
+  min-height: 0;
+  padding: 20rpx 24rpx;
+  box-sizing: border-box;
+}
+
+.panel-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  margin-bottom: 20rpx;
+}
+
+/* ============ 数据表 ============ */
+
+.dt-head,
+.dt-row {
+  display: flex;
+  align-items: center;
+  padding: 8rpx 0;
+  border-bottom: 1rpx solid var(--border);
+}
+
+.dt-head {
+  font-size: 20rpx;
+  color: var(--text-light);
+  font-weight: 600;
+  border-bottom: 2rpx solid var(--border);
+}
+
+.dt-c {
+  text-align: center;
+  font-size: 22rpx;
+  box-sizing: border-box;
+  padding: 0 2rpx;
+}
+
+/* 七列按内容需要分配宽度：读数要放得下 24.531 这种五位有效数字 */
+.dt-rd { flex: 0.6; color: var(--text-light); }
+.dt-k { flex: 0.8; }
+.dt-in-h { flex: 1.25; }
+.dt-del { flex: 0.5; color: #d33; font-size: 26rpx; }
+
+.dt-in {
+  height: 56rpx;
+  line-height: 56rpx;
+  background: #f8f9fa;
+  border-radius: 6rpx;
+  min-width: 0;
+}
+
+.dt-empty {
+  padding: 24rpx 0;
+  font-size: 24rpx;
+  color: var(--text-light);
+  line-height: 1.6;
+}
+
+.dt-note {
+  margin-top: 12rpx;
+  font-size: 20rpx;
+  color: var(--text-light);
+  line-height: 1.5;
+}
+
+.add-btn { margin-top: 20rpx; width: 100%; }
+.calc-btn { width: 100%; }
+
+/* ============ 计算结果 ============ */
+
+.calc-box {
+  margin-top: 20rpx;
+  padding: 16rpx;
+  background: #f5f7fb;
+  border-radius: 10rpx;
+}
+
+.calc-line {
+  font-size: 22rpx;
+  color: var(--text-light);
+  line-height: 1.7;
+}
+
+.calc-r {
+  margin-top: 10rpx;
+  font-size: 34rpx;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.calc-err { font-size: 24rpx; color: var(--text-light); margin-top: 4rpx; }
+
+.tip-card .th-li { font-size: 24rpx; line-height: 1.8; }
+
+.submit-btn { margin-top: 32rpx; width: 100%; }

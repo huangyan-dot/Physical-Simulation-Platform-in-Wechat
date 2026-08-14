@@ -1,0 +1,57 @@
+<!-- pages/assignment/publish/publish.wxml -->
+<view class="container">
+  <view class="card">
+    <view class="form-title">发布作业</view>
+    <view class="form-item">
+      <text class="label">班级</text>
+      <view class="picker static">{{className}}</view>
+    </view>
+
+    <view class="form-item">
+      <text class="label">作业标题</text>
+      <input
+        class="input"
+        placeholder="如：第一次牛顿环实验"
+        value="{{title}}"
+        bindinput="onTitleInput"
+      />
+    </view>
+
+    <view class="form-item">
+      <text class="label">实验关卡</text>
+      <picker bindchange="onLevelChange" value="{{levelIndex}}" range="{{levels}}" range-key="name">
+        <view class="picker {{selectedLevelId ? '' : 'placeholder'}}">
+          {{selectedLevelId ? levels[levelIndex].name : '请选择关卡'}}
+        </view>
+      </picker>
+    </view>
+
+    <view class="form-item">
+      <text class="label">截止时间</text>
+      <picker mode="date" value="{{deadline}}" bindchange="onDeadlineChange">
+        <view class="picker">{{deadline}}</view>
+      </picker>
+      <text class="form-hint">截止时间当天 23:59，学生可在截止前多次提交取最高分</text>
+    </view>
+
+    <view class="form-item">
+      <text class="label">综合得分比例</text>
+      <view class="ratio-bar">
+        <view class="ratio-seg data" style="flex: {{dataWeight}}">
+          <text>测量数据 {{dataWeight}}%</text>
+        </view>
+        <view class="ratio-seg quiz" style="flex: {{100 - dataWeight}}">
+          <text>自测 {{100 - dataWeight}}%</text>
+        </view>
+      </view>
+      <slider min="5" max="100" step="5" value="{{dataWeight}}"
+        bindchanging="onWeightChanging" bindchange="onWeightChange"
+        activeColor="#3498db" block-size="20" />
+      <text class="form-hint">默认 测量数据 60% ：自测题目 40%，发布后仍可在「查看提交」里调整</text>
+    </view>
+
+    <button class="btn btn-primary" bindtap="handlePublish" disabled="{{loading}}">
+      {{loading ? '发布中...' : '发布作业'}}
+    </button>
+  </view>
+</view>

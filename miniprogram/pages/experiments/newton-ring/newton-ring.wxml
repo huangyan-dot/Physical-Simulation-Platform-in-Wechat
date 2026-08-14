@@ -1,0 +1,259 @@
+<!-- pages/experiments/newton-ring/newton-ring.wxml -->
+<view class="experiment-page">
+  <!-- 标签栏 -->
+  <view class="tab-bar">
+    <view class="tab {{tab === 'theory' ? 'active' : ''}}" bindtap="switchTab" data-tab="theory">原理</view>
+    <view class="tab {{tab === 'experiment' ? 'active' : ''}}" bindtap="switchTab" data-tab="experiment">实验</view>
+    <view class="tab {{tab === 'quiz' ? 'active' : ''}} {{dataSubmitted ? '' : 'locked'}}" bindtap="switchTab" data-tab="quiz">
+      自测{{dataSubmitted ? '' : ' 🔒'}}
+    </view>
+  </view>
+
+  <!-- ========== 原理 ========== -->
+  <scroll-view wx:if="{{tab === 'theory'}}" class="pane" scroll-y>
+    <view wx:if="{{theory}}">
+      <view class="th-title">{{theory.name}}</view>
+
+      <view class="key-formula">{{theory.keyFormula}}</view>
+
+      <view class="card">
+        <view class="th-h">实验目的</view>
+        <view wx:for="{{theory.purpose}}" wx:key="index" class="th-li">{{index + 1}}. {{item}}</view>
+      </view>
+
+      <view class="card" wx:for="{{theory.principle}}" wx:key="title">
+        <view class="th-h">{{item.title}}</view>
+        <text class="th-p">{{item.content}}</text>
+      </view>
+
+      <view class="card">
+        <view class="th-h">实验仪器</view>
+        <view wx:for="{{theory.apparatus}}" wx:key="name" class="th-app">
+          <text class="th-app-n">{{item.name}}</text>
+          <text class="th-app-d">{{item.desc}}</text>
+        </view>
+      </view>
+
+      <view class="card">
+        <view class="th-h">操作步骤</view>
+        <view wx:for="{{theory.steps}}" wx:key="index" class="th-li">{{index + 1}}. {{item}}</view>
+      </view>
+
+      <view class="card caution-card">
+        <view class="th-h">注意事项</view>
+        <view wx:for="{{theory.cautions}}" wx:key="index" class="th-li">• {{item}}</view>
+      </view>
+
+      <button class="btn btn-primary go-btn" bindtap="switchTab" data-tab="experiment">开始实验</button>
+    </view>
+  </scroll-view>
+
+  <!-- ========== 实验 ========== -->
+  <block wx:if="{{tab === 'experiment'}}">
+    <!-- 视场：宽高由 js 按屏幕尺寸算好后内联，canvas 不给显式高度会退化成 150px 显示为一片灰 -->
+    <view class="stage-wrap" style="height: {{canvasHeight}}px;">
+      <canvas type="2d" id="ringCanvas" class="ring-canvas"
+        style="width: {{canvasWidth}}px; height: {{canvasHeight}}px;"></canvas>
+
+      <!-- 点一下走一小步，按住连续走。
+           这里用小于号/大于号而不是 ‹ ›：单角引号字形又细又小，压在黑底视场上几乎看不见，
+           普通的小于/大于号字形粗、任何平台字体都必然有，配上纯白加粗才认得出来。
+           WXML 里尖括号是标签起始符，必须写成实体 &lt; &gt; -->
+      <view class="nav-arrow left" bindtap="stepLeft" bindlongpress="holdLeft"
+        bindtouchend="releaseHold" bindtouchcancel="releaseHold">&lt;</view>
+      <view class="nav-arrow right" bindtap="stepRight" bindlongpress="holdRight"
+        bindtouchend="releaseHold" bindtouchcancel="releaseHold">&gt;</view>
+
+      <view class="stage-hint">点两侧 &lt; &gt; 平移牛顿环（按住可连续移动）· 竖丝卡住暗环外切线即可读数</view>
+    </view>
+
+    <!-- 读数条：跟着叉丝实时变，固定在图片下方不随内容滚动 -->
+    <view class="read-bar">
+      <view class="side-row">
+        <text class="side-label">正在读</text>
+        <view class="side-btns">
+          <view class="side-btn {{readSide === 'left' ? 'active' : ''}}"
+            bindtap="onSideChange" data-side="left">左侧环</view>
+          <view class="side-btn {{readSide === 'right' ? 'active' : ''}}"
+            bindtap="onSideChange" data-side="right">右侧环</view>
+        </view>
+      </view>
+
+      <view wx:if="{{aligned}}" class="read-ok">
+        <view class="ro-title">
+          已对准 {{readSide === 'left' ? '左' : '右'}}侧 第 {{aligned.k}} 级暗环外切线
+        </view>
+        <view class="ro-grid">
+          <view class="ro-cell">
+            <text class="ro-k">{{readSide === 'left' ? '左' : '右'}}边主尺刻度</text>
+            <text class="ro-v">{{mainScale}} mm</text>
+          </view>
+          <view class="ro-cell">
+            <text class="ro-k">{{readSide === 'left' ? '左' : '右'}}边鼓轮（螺旋刻度）</text>
+            <text class="ro-v">{{drumDiv}} 格</text>
+          </view>
+        </view>
+        <view class="ro-note">鼓轮一周 1mm 共 100 格，每格 0.01mm，估读到 0.001mm。读数 = 主尺 + 鼓轮格数 × 0.01，自己算出来填进表里。</view>
+      </view>
+
+      <view wx:else class="read-warn">
+        竖丝还没卡在任何暗环的外切线上，先点 &lt; &gt; 微调对准，再记录数据
+      </view>
+    </view>
+
+    <scroll-view class="control-panel" scroll-y enhanced show-scrollbar>
+      <!-- 数据表 -->
+      <view class="card">
+        <view class="panel-title">测量数据表</view>
+        <view class="dt-head">
+          <text class="dt-c dt-rd">轮数</text>
+          <text class="dt-c dt-k">左环级数</text>
+          <text class="dt-c dt-in-h">左环读数</text>
+          <text class="dt-c dt-k">右环级数</text>
+          <text class="dt-c dt-in-h">右环读数</text>
+          <text class="dt-c dt-in-h">环直径</text>
+          <text class="dt-c dt-del"></text>
+        </view>
+
+        <view wx:for="{{rounds}}" wx:key="round" class="dt-row">
+          <text class="dt-c dt-rd">{{item.round}}</text>
+          <input class="dt-c dt-k dt-in" type="number" value="{{item.kLeft}}"
+            bindinput="onRoundInput" data-idx="{{index}}" data-field="kLeft" placeholder="k" />
+          <input class="dt-c dt-in-h dt-in" type="digit" value="{{item.readLeft}}"
+            bindinput="onRoundInput" data-idx="{{index}}" data-field="readLeft" placeholder="mm" />
+          <input class="dt-c dt-k dt-in" type="number" value="{{item.kRight}}"
+            bindinput="onRoundInput" data-idx="{{index}}" data-field="kRight" placeholder="k" />
+          <input class="dt-c dt-in-h dt-in" type="digit" value="{{item.readRight}}"
+            bindinput="onRoundInput" data-idx="{{index}}" data-field="readRight" placeholder="mm" />
+          <input class="dt-c dt-in-h dt-in" type="digit" value="{{item.diameter}}"
+            bindinput="onRoundInput" data-idx="{{index}}" data-field="diameter" placeholder="mm" />
+          <text class="dt-c dt-del" bindtap="deleteRound" data-idx="{{index}}">✕</text>
+        </view>
+
+        <view wx:if="{{rounds.length === 0}}" class="dt-empty">
+          还没有数据。对准一个环的外切线后，点下面的按钮加一行，六列都由你自己填。
+        </view>
+
+        <button class="btn btn-outline add-btn" size="mini" bindtap="addRound">
+          增加一轮（第 {{rounds.length + 1}} 轮）
+        </button>
+        <view class="dt-note">环直径 D = |右环读数 − 左环读数|，同一轮的左右环级数要填成同一个 k。</view>
+      </view>
+
+      <!-- 用平方差法算 R：算式给出来，代入和运算由学生自己做 -->
+      <view class="card" wx:if="{{rounds.length >= 2}}">
+        <view class="panel-title">用平方差法算曲率半径并确认结果</view>
+        <view class="formula-line">R = (D²ₘ − D²ₙ) / [4(m − n)λ]　　λ = 589.3nm = 5.893×10⁻⁴ mm</view>
+        <view class="form-line">
+          <text class="fl-label">曲率半径 R</text>
+          <input class="fl-input" type="digit" placeholder="自己算出后填入"
+            value="{{rInput}}" bindinput="onRInput" />
+          <text class="fl-unit">mm</text>
+        </view>
+        <view class="dt-note">从表里挑两个相差较大的环级（如第 20 环与第 10 环）代入，注意 D 是直径不是半径。</view>
+
+        <button class="btn btn-outline calc-btn" size="mini" bindtap="confirmFinalR">
+          确认为最终结果
+        </button>
+
+        <!-- 确认后才揭示真值与误差率 -->
+        <view wx:if="{{errorInfo}}" class="calc-box err-box {{errorInfo.level}}">
+          <view class="calc-r">你的结果 R = {{finalR}} mm</view>
+          <view class="calc-err">透镜曲率半径真值 {{errorInfo.trueR}} mm</view>
+          <view class="err-rate">误差率 {{errorInfo.relErr}}%</view>
+          <view class="err-cmt">{{errorInfo.comment}}</view>
+          <view class="hint-line">评分标准：误差 ≤0.5% 得 100，2% 约 88，5% 约 65，8% 以上不及格</view>
+        </view>
+      </view>
+
+      <view class="card tip-card" wx:if="{{rounds.length === 0}}">
+        <view class="th-h">怎么测</view>
+        <view class="th-li">1. 上方选「左侧环」，点 &lt; &gt; 把竖丝移到某一级暗环的外切线上</view>
+        <view class="th-li">2. 对准后读数条会显示主尺刻度与鼓轮格数，自己相加得到读数</view>
+        <view class="th-li">3. 切到「右侧环」，对准同一级环，再读一次</view>
+        <view class="th-li">4. 点「增加一轮」，把环级数、左右读数、算出的直径填进表里</view>
+        <view class="th-li">5. 至少测两个不同环级（如第 20 环和第 10 环），自己用平方差法算 R 并确认</view>
+      </view>
+
+      <view wx:if="{{dataSubmitted}}" class="card score-card">
+        <view class="th-h">测量数据已提交</view>
+        <view class="sc-line">测量数据得分 <text class="sc-num">{{dataScore}}</text></view>
+        <view class="dt-note">综合得分 = 测量数据 × {{dataWeight}}% + 自测题目 × {{quizWeight}}%</view>
+        <button class="btn btn-primary calc-btn" size="mini" bindtap="switchTab" data-tab="quiz">进入自测题目</button>
+      </view>
+
+      <button class="btn btn-primary submit-btn" bindtap="submitReadings" disabled="{{submitting || !finalR}}">
+        {{submitting ? '提交中...' : (dataSubmitted ? '重新提交测量数据' : (finalR ? '提交测量数据' : '请先确认最终结果'))}}
+      </button>
+    </scroll-view>
+  </block>
+
+  <!-- ========== 自测 ========== -->
+  <scroll-view wx:if="{{tab === 'quiz'}}" class="pane" scroll-y>
+    <!-- 权重卡：让学生清楚自测分怎么并进综合分 -->
+    <view class="card weight-card">
+      <view class="wc-row">
+        <text>测量数据 {{dataScore}} 分</text>
+        <text class="wc-w">占 {{dataWeight}}%</text>
+      </view>
+      <view class="wc-row">
+        <text>自测题目 {{quizScore === null ? '待完成' : quizScore + ' 分'}}</text>
+        <text class="wc-w">占 {{quizWeight}}%</text>
+      </view>
+      <view wx:if="{{comboScore !== null}}" class="wc-combo">综合得分 {{comboScore}}</view>
+    </view>
+
+    <view class="quiz-head">
+      <text class="quiz-title">自测（{{quizSize}} 题随机抽取）</text>
+      <text class="quiz-reset" bindtap="resetQuiz">换一组</text>
+    </view>
+
+    <view wx:for="{{quiz}}" wx:key="__idx" wx:for-index="qi" wx:for-item="q" class="card quiz-card">
+      <view class="q-head">
+        <text class="q-no">{{qi + 1}}</text>
+        <text class="q-type">{{q.type === 'single' ? '单选' : (q.type === 'judge' ? '判断' : '计算')}}</text>
+      </view>
+      <view class="q-text">{{q.question}}</view>
+
+      <!-- 单选 -->
+      <radio-group wx:if="{{q.type === 'single'}}" bindchange="onQuizChoice" data-idx="{{qi}}">
+        <label wx:for="{{q.options}}" wx:for-item="opt" wx:for-index="oi" wx:key="oi" class="q-opt">
+          <radio value="{{oi}}" checked="{{quizAnswers[qi] === oi}}" />
+          <text class="q-opt-t">{{opt}}</text>
+        </label>
+      </radio-group>
+
+      <!-- 判断 -->
+      <view wx:elif="{{q.type === 'judge'}}" class="q-judge">
+        <view class="j-btn {{quizAnswers[qi] === true ? 'active' : ''}}"
+          bindtap="onQuizJudge" data-idx="{{qi}}" data-val="true">正确</view>
+        <view class="j-btn {{quizAnswers[qi] === false ? 'active' : ''}}"
+          bindtap="onQuizJudge" data-idx="{{qi}}" data-val="false">错误</view>
+      </view>
+
+      <!-- 计算 -->
+      <view wx:else class="q-calc">
+        <input class="q-input" type="digit" placeholder="填写数值"
+          value="{{quizAnswers[qi]}}" bindinput="onQuizInput" data-idx="{{qi}}" />
+        <text class="q-unit">{{q.unit}}</text>
+      </view>
+
+      <button class="btn btn-outline q-check" size="mini" bindtap="checkOne" data-idx="{{qi}}">检查</button>
+
+      <!-- 反馈 -->
+      <view wx:if="{{quizState[qi] === 'right'}}" class="q-fb right">✓ 答对了</view>
+      <view wx:elif="{{quizState[qi] === 'hint'}}" class="q-fb hint">
+        <text class="fb-tag">提示</text>
+        <text>{{q.hint}}</text>
+      </view>
+      <view wx:elif="{{quizState[qi] === 'wrong'}}" class="q-fb wrong">
+        <text class="fb-tag">解析</text>
+        <text>{{q.explanation}}</text>
+      </view>
+    </view>
+
+    <button class="btn btn-primary submit-btn" bindtap="submitQuiz" disabled="{{quizSubmitting}}">
+      {{quizSubmitting ? '提交中...' : '提交自测'}}
+    </button>
+  </scroll-view>
+</view>

@@ -1,0 +1,390 @@
+/* pages/experiments/pendulum/pendulum.wxss */
+
+.experiment-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  /* 页面本身不滚动：tab 栏与 3D 装置固定，只有下方面板内部滚动 */
+  overflow: hidden;
+  background: #f5f6fa;
+}
+
+/* ===== 上部 3D 装置 ===== */
+.stage-wrap {
+  position: relative;
+  flex-shrink: 0;
+  background: #eef2f7;
+}
+
+.stage-canvas {
+  display: block;
+  /* 实际宽高由 wxml 内联 style 按屏幕宽度设定，
+     canvas 不设显式高度会退化成默认 150px 而显示为一片灰 */
+}
+
+/* 右上角实时周期数 */
+.period-badge {
+  position: absolute;
+  top: 16rpx;
+  right: 16rpx;
+  display: flex;
+  align-items: baseline;
+  gap: 6rpx;
+  padding: 12rpx 20rpx;
+  background: rgba(26, 26, 46, 0.88);
+  border-radius: 12rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.15);
+}
+
+.period-badge.counting {
+  background: rgba(39, 174, 96, 0.92);
+}
+
+.pb-label {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.7);
+  margin-right: 4rpx;
+}
+
+.pb-num {
+  font-size: 44rpx;
+  font-weight: bold;
+  color: #7ee8fa;
+  font-family: monospace;
+  line-height: 1;
+}
+
+.period-badge.counting .pb-num { color: #fff; }
+
+.pb-total {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+/* 左上角视角/倍速 */
+.stage-tools {
+  position: absolute;
+  top: 16rpx;
+  left: 16rpx;
+  display: flex;
+  gap: 10rpx;
+}
+
+.st-item {
+  padding: 8rpx 16rpx;
+  background: rgba(255, 255, 255, 0.88);
+  border-radius: 8rpx;
+  font-size: 22rpx;
+  color: var(--text);
+  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.08);
+}
+
+.stage-hint {
+  position: absolute;
+  bottom: 10rpx;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 22rpx;
+  color: rgba(0, 0, 0, 0.35);
+}
+
+.stage-note {
+  flex-shrink: 0;
+  padding: 8rpx 24rpx 0;
+  font-size: 21rpx;
+  line-height: 1.5;
+  color: #9aa4af;
+  text-align: center;
+}
+
+/* 秒表左侧状态字（全自动计时，无按钮） */
+.sw-label {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.72);
+  letter-spacing: 1rpx;
+}
+
+/* ===== 一轮摆完后的读数提示 ===== */
+.run-done {
+  margin-top: 20rpx;
+  padding: 20rpx;
+  background: #eaf6ff;
+  border: 1rpx solid #bcdffb;
+  border-radius: 12rpx;
+}
+
+.rd-line {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #1c6ea4;
+  margin-bottom: 8rpx;
+}
+
+.rd-hint {
+  font-size: 22rpx;
+  color: #6b7683;
+  margin-bottom: 16rpx;
+  line-height: 1.5;
+}
+
+/* ===== 学生填写的数据表 ===== */
+.dt-head,
+.dt-row {
+  display: flex;
+  align-items: center;
+  border-bottom: 1rpx solid var(--border, #e6e9ed);
+}
+
+.dt-head {
+  padding: 12rpx 0;
+  background: #f5f7fa;
+  border-radius: 8rpx 8rpx 0 0;
+}
+
+.dt-head .dt-c {
+  font-size: 21rpx;
+  color: #7a8592;
+  font-weight: 600;
+}
+
+.dt-row.picked {
+  background: #f0fbf4;
+}
+
+/* 六列：勾选 / 轮数 / 角度 / 周期 / g / 删 */
+.dt-c {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  font-size: 24rpx;
+  color: var(--text, #2c3e50);
+}
+
+.dt-sel { flex: 0 0 56rpx; }
+.dt-rd  { flex: 0 0 60rpx; }
+.dt-del { flex: 0 0 52rpx; font-size: 22rpx; color: #e74c3c; }
+
+.dt-check {
+  font-size: 34rpx;
+  color: #27ae60;
+  line-height: 1;
+}
+
+.dt-row:not(.picked) .dt-check { color: #b8c0c9; }
+
+/* 表格内输入框：去掉默认内边距，保证 5 列在窄屏排得下 */
+.dt-in {
+  height: 64rpx;
+  padding: 0 4rpx;
+  font-size: 24rpx;
+  text-align: center;
+  background: #fff;
+  border: 1rpx solid #dfe4e9;
+  border-radius: 6rpx;
+  margin: 6rpx 3rpx;
+  box-sizing: border-box;
+}
+
+.dt-note {
+  margin-top: 14rpx;
+  font-size: 21rpx;
+  line-height: 1.5;
+  color: #9aa4af;
+}
+
+/* 选用轮次：紧跟在平均值输入框下面 */
+.sel-line {
+  margin: 10rpx 0 4rpx;
+  padding: 12rpx 16rpx;
+  background: #f0fbf4;
+  border-left: 6rpx solid #27ae60;
+  border-radius: 6rpx;
+  font-size: 24rpx;
+  color: #1e8449;
+}
+
+.sel-line.empty {
+  background: #fdf3f2;
+  border-left-color: #e74c3c;
+  color: #c0392b;
+}
+
+/* ===== 误差率结果框（确认后才出现） ===== */
+/* .err-box / .err-rate / .err-cmt 已提到 app.wxss，牛顿环也用同一套 */
+
+/* 地区卡里未揭示时的占位字样 */
+.rc-g-hidden {
+  font-size: 24rpx;
+  color: #a6b0ba;
+}
+
+/* ===== 控制面板 ===== */
+/* min-height:0 是关键：flex 子项默认 min-height:auto，scroll-view 会被内容
+   撑高而不是内部滚动，结果整页超过 100vh 一起往上滑，把 tab 和画布顶走。
+   置 0 后它只占剩余空间，超出的内容在自己内部滚。 */
+.control-panel {
+  flex: 1;
+  min-height: 0;
+  padding: 20rpx 24rpx;
+  box-sizing: border-box;
+}
+
+.panel-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  margin-bottom: 20rpx;
+}
+
+.param-item {
+  margin-bottom: 24rpx;
+}
+
+.param-label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12rpx;
+  font-size: 28rpx;
+}
+
+.param-value {
+  color: var(--primary);
+  font-weight: 500;
+}
+
+/* ===== 地区卡片 ===== */
+.region-card { background: #f0f7ff; }
+
+.rc-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rc-left { display: flex; flex-direction: column; }
+
+.rc-label {
+  font-size: 23rpx;
+  color: var(--text-light);
+}
+
+.rc-place {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--text);
+  margin-top: 4rpx;
+}
+
+.rc-g { display: flex; align-items: baseline; gap: 4rpx; }
+
+.rc-g-num {
+  font-size: 40rpx;
+  font-weight: bold;
+  color: var(--primary);
+  font-family: monospace;
+}
+
+.rc-g-unit {
+  font-size: 22rpx;
+  color: var(--text-light);
+}
+
+.rc-btns {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 20rpx;
+}
+
+.rc-btn {
+  flex: 1;
+  text-align: center;
+  padding: 14rpx 0;
+  border: 2rpx solid var(--primary);
+  border-radius: 8rpx;
+  font-size: 25rpx;
+  color: var(--primary);
+  background: #fff;
+}
+
+/* 原理页当地 g 卡片 */
+.local-g-card { background: #f0f7ff; }
+
+.lg-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 12rpx;
+}
+
+.lg-place { font-size: 29rpx; font-weight: 600; }
+
+.lg-value {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: var(--primary);
+  font-family: monospace;
+}
+
+/* 得分卡与权重卡（.score-card / .weight-card 等）已提到 app.wxss，
+   牛顿环、示波器同样要用，重复定义容易改一处漏一处 */
+
+/* ===== 地区选择弹层 ===== */
+.modal-mask {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+}
+
+.modal-body {
+  width: 100%;
+  background: #fff;
+  border-radius: 24rpx 24rpx 0 0;
+  padding: 32rpx 0 0;
+}
+
+.modal-title {
+  text-align: center;
+  font-size: 32rpx;
+  font-weight: 600;
+  margin-bottom: 20rpx;
+}
+
+.region-picker {
+  height: 440rpx;
+  width: 100%;
+}
+
+.pv-item {
+  line-height: 88rpx;
+  text-align: center;
+  font-size: 28rpx;
+  color: var(--text);
+}
+
+.modal-btns {
+  display: flex;
+  border-top: 1rpx solid var(--border);
+}
+
+.modal-btn {
+  flex: 1;
+  text-align: center;
+  padding: 30rpx 0;
+  font-size: 30rpx;
+  color: var(--text-light);
+}
+
+.modal-btn.primary {
+  color: var(--primary);
+  font-weight: 600;
+  border-left: 1rpx solid var(--border);
+}
+
+.submit-btn {
+  margin-top: 32rpx;
+  margin-bottom: 40rpx;
+  width: 100%;
+}

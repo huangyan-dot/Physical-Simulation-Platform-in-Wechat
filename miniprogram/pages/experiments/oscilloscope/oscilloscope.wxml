@@ -1,0 +1,192 @@
+<!-- pages/experiments/oscilloscope/oscilloscope.wxml -->
+<view class="experiment-page">
+  <view class="tab-bar">
+    <view class="tab {{tab === 'theory' ? 'active' : ''}}" bindtap="switchTab" data-tab="theory">原理</view>
+    <view class="tab {{tab === 'experiment' ? 'active' : ''}}" bindtap="switchTab" data-tab="experiment">实验</view>
+    <view class="tab {{tab === 'quiz' ? 'active' : ''}}" bindtap="switchTab" data-tab="quiz">自测</view>
+  </view>
+
+  <!-- ========== 原理 ========== -->
+  <scroll-view wx:if="{{tab === 'theory'}}" class="pane" scroll-y>
+    <view wx:if="{{theory}}">
+      <view class="th-title">{{theory.name}}</view>
+      <view class="key-formula">{{theory.keyFormula}}</view>
+
+      <view class="card">
+        <view class="th-h">实验目的</view>
+        <view wx:for="{{theory.purpose}}" wx:key="index" class="th-li">{{index + 1}}. {{item}}</view>
+      </view>
+
+      <view class="card" wx:for="{{theory.principle}}" wx:key="title">
+        <view class="th-h">{{item.title}}</view>
+        <text class="th-p">{{item.content}}</text>
+      </view>
+
+      <view class="card">
+        <view class="th-h">实验仪器</view>
+        <view wx:for="{{theory.apparatus}}" wx:key="name" class="th-app">
+          <text class="th-app-n">{{item.name}}</text>
+          <text class="th-app-d">{{item.desc}}</text>
+        </view>
+      </view>
+
+      <view class="card">
+        <view class="th-h">操作步骤</view>
+        <view wx:for="{{theory.steps}}" wx:key="index" class="th-li">{{index + 1}}. {{item}}</view>
+      </view>
+
+      <view class="card caution-card">
+        <view class="th-h">注意事项</view>
+        <view wx:for="{{theory.cautions}}" wx:key="index" class="th-li">• {{item}}</view>
+      </view>
+
+      <button class="btn btn-primary go-btn" bindtap="switchTab" data-tab="experiment">开始实验</button>
+    </view>
+  </scroll-view>
+
+  <!-- ========== 实验 ========== -->
+  <block wx:if="{{tab === 'experiment'}}">
+    <view class="canvas-wrap">
+      <canvas type="2d" id="scopeCanvas" class="scope-canvas"></canvas>
+      <view class="canvas-hint">屏幕 10×8 格 · 数格子读数</view>
+    </view>
+
+    <scroll-view class="control-panel" scroll-y enhanced show-scrollbar>
+      <!-- 面板旋钮 -->
+      <view class="card">
+        <view class="panel-title">① 调节面板</view>
+
+        <view class="form-line">
+          <text class="fl-label">显示模式</text>
+          <picker class="fl-picker" range="{{modes}}" bindchange="onModeChange">
+            <view class="picker">{{mode}}</view>
+          </picker>
+        </view>
+
+        <view class="param-item">
+          <view class="param-label">
+            <text>Y 轴灵敏度</text>
+            <text class="param-value">{{voltDiv}} V/div</text>
+          </view>
+          <slider min="0" max="5" step="1" value="{{voltIdx}}" bindchange="onVoltDivChange" />
+        </view>
+
+        <view class="param-item">
+          <view class="param-label">
+            <text>扫描速度</text>
+            <text class="param-value">{{timeDiv}} ms/div</text>
+          </view>
+          <slider min="0" max="6" step="1" value="{{timeIdx}}" bindchange="onTimeDivChange" />
+        </view>
+        <view class="hint-line">调档位使波形大小适中（占屏约 2/3）后再读数</view>
+      </view>
+
+      <!-- 数格子读数 -->
+      <view class="card">
+        <view class="panel-title">② 数格子读数</view>
+
+        <view class="ch-block">
+          <view class="ch-title">CH1</view>
+          <view class="form-line">
+            <text class="fl-label">峰峰占几格</text>
+            <input class="fl-input" type="digit" placeholder="格" value="{{readings.ch1_vdiv}}"
+              bindinput="onGridInput" data-field="ch1_vdiv" />
+            <text class="fl-unit">div</text>
+          </view>
+          <view class="form-line">
+            <text class="fl-label">一周期占几格</text>
+            <input class="fl-input" type="digit" placeholder="格" value="{{readings.ch1_tdiv}}"
+              bindinput="onGridInput" data-field="ch1_tdiv" />
+            <text class="fl-unit">div</text>
+          </view>
+          <view wx:if="{{derived.ch1_A || derived.ch1_f}}" class="derive-box">
+            <text wx:if="{{derived.ch1_A}}">振幅 A = {{derived.ch1_A}} V</text>
+            <text wx:if="{{derived.ch1_f}}">频率 f = {{derived.ch1_f}} Hz</text>
+          </view>
+        </view>
+
+        <view class="ch-block">
+          <view class="ch-title">CH2</view>
+          <view class="form-line">
+            <text class="fl-label">峰峰占几格</text>
+            <input class="fl-input" type="digit" placeholder="格" value="{{readings.ch2_vdiv}}"
+              bindinput="onGridInput" data-field="ch2_vdiv" />
+            <text class="fl-unit">div</text>
+          </view>
+          <view class="form-line">
+            <text class="fl-label">一周期占几格</text>
+            <input class="fl-input" type="digit" placeholder="格" value="{{readings.ch2_tdiv}}"
+              bindinput="onGridInput" data-field="ch2_tdiv" />
+            <text class="fl-unit">div</text>
+          </view>
+          <view wx:if="{{derived.ch2_A || derived.ch2_f}}" class="derive-box">
+            <text wx:if="{{derived.ch2_A}}">振幅 A = {{derived.ch2_A}} V</text>
+            <text wx:if="{{derived.ch2_f}}">频率 f = {{derived.ch2_f}} Hz</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="card tip-card">
+        <view class="th-h">怎么读</view>
+        <view class="th-li">1. 切到 CH1，调 V/div 和 ms/div 让波形清晰、大小适中</view>
+        <view class="th-li">2. 数波形最高到最低占几格 → 峰峰值 = 格数 × V/div</view>
+        <view class="th-li">3. 数一个完整周期占几格 → T = 格数 × ms/div，f = 1/T</view>
+        <view class="th-li">4. 切到 CH2 重复测量，两个通道都填完再提交</view>
+      </view>
+
+      <button class="btn btn-primary submit-btn" bindtap="submitReadings" disabled="{{submitting}}">
+        {{submitting ? '提交中...' : '提交测量数据'}}
+      </button>
+    </scroll-view>
+  </block>
+
+  <!-- ========== 自测 ========== -->
+  <scroll-view wx:if="{{tab === 'quiz'}}" class="pane" scroll-y>
+    <view class="quiz-head">
+      <text class="quiz-title">自测（{{quizSize}} 题随机抽取）</text>
+      <text class="quiz-reset" bindtap="resetQuiz">换一组</text>
+    </view>
+
+    <view wx:if="{{quizScore !== null}}" class="quiz-score">本次得分：{{quizScore}}</view>
+
+    <view wx:for="{{quiz}}" wx:key="__idx" wx:for-index="qi" wx:for-item="q" class="card quiz-card">
+      <view class="q-head">
+        <text class="q-no">{{qi + 1}}</text>
+        <text class="q-type">{{q.type === 'single' ? '单选' : (q.type === 'judge' ? '判断' : '计算')}}</text>
+      </view>
+      <view class="q-text">{{q.question}}</view>
+
+      <radio-group wx:if="{{q.type === 'single'}}" bindchange="onQuizChoice" data-idx="{{qi}}">
+        <label wx:for="{{q.options}}" wx:for-item="opt" wx:for-index="oi" wx:key="oi" class="q-opt">
+          <radio value="{{oi}}" checked="{{quizAnswers[qi] === oi}}" />
+          <text class="q-opt-t">{{opt}}</text>
+        </label>
+      </radio-group>
+
+      <view wx:elif="{{q.type === 'judge'}}" class="q-judge">
+        <view class="j-btn {{quizAnswers[qi] === true ? 'active' : ''}}"
+          bindtap="onQuizJudge" data-idx="{{qi}}" data-val="true">正确</view>
+        <view class="j-btn {{quizAnswers[qi] === false ? 'active' : ''}}"
+          bindtap="onQuizJudge" data-idx="{{qi}}" data-val="false">错误</view>
+      </view>
+
+      <view wx:else class="q-calc">
+        <input class="q-input" type="digit" placeholder="填写数值"
+          value="{{quizAnswers[qi]}}" bindinput="onQuizInput" data-idx="{{qi}}" />
+        <text class="q-unit">{{q.unit}}</text>
+      </view>
+
+      <button class="btn btn-outline q-check" size="mini" bindtap="checkOne" data-idx="{{qi}}">检查</button>
+
+      <view wx:if="{{quizState[qi] === 'right'}}" class="q-fb right">✓ 答对了</view>
+      <view wx:elif="{{quizState[qi] === 'hint'}}" class="q-fb hint">
+        <text class="fb-tag">提示</text><text>{{q.hint}}</text>
+      </view>
+      <view wx:elif="{{quizState[qi] === 'wrong'}}" class="q-fb wrong">
+        <text class="fb-tag">解析</text><text>{{q.explanation}}</text>
+      </view>
+    </view>
+
+    <button class="btn btn-primary submit-btn" bindtap="submitQuiz">提交自测</button>
+  </scroll-view>
+</view>
