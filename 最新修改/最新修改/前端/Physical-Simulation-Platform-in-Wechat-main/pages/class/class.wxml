@@ -1,0 +1,84 @@
+<!-- pages/class/class.wxml -->
+<view class="container">
+  <!-- 教师/管理员：创建班级 -->
+  <view wx:if="{{canManage}}" class="card create-card">
+    <view class="section-title">创建班级</view>
+    <view class="form-item">
+      <input
+        class="input"
+        placeholder="请输入班级名称"
+        value="{{newClassName}}"
+        bindinput="onClassNameInput"
+      />
+    </view>
+    <button class="btn btn-primary" bindtap="createClass" disabled="{{loading}}">
+      {{loading ? '创建中...' : '创建班级'}}
+    </button>
+  </view>
+
+  <!-- 班级列表 -->
+  <view class="section-title">我的班级</view>
+
+  <view wx:if="{{loadingList}}" class="loading-state">
+    <text>加载中...</text>
+  </view>
+
+  <view wx:elif="{{classes.length === 0}}" class="empty-state">
+    <text class="empty-icon">🏫</text>
+    <text>暂无班级</text>
+  </view>
+
+  <view wx:else class="class-list">
+    <view wx:for="{{classes}}" wx:key="id" class="class-card card">
+      <view class="class-header">
+        <text class="class-name">{{item.name}}</text>
+        <text class="class-teacher">教师：{{item.teacher_name || '-'}}</text>
+      </view>
+
+      <view class="class-stats">
+        <text>成员 {{item.member_count || 0}} 人</text>
+      </view>
+
+      <view wx:if="{{canManage}}" class="class-actions">
+        <button
+          class="action-btn"
+          size="mini"
+          type="primary"
+          bindtap="showAddMember"
+          data-id="{{item.id}}"
+        >添加学生</button>
+        <button
+          class="action-btn danger"
+          size="mini"
+          type="warn"
+          bindtap="deleteClass"
+          data-id="{{item.id}}"
+        >删除</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 添加学生弹窗 -->
+  <view wx:if="{{showAddModal}}" class="modal-mask" bindtap="closeModal">
+    <view class="modal-content" catchtap="preventBubble">
+      <view class="modal-title">添加学生到班级</view>
+      <view class="form-item">
+        <text class="label">学生用户 ID</text>
+        <input
+          class="input"
+          placeholder="请输入学生 user_id"
+          value="{{addUserId}}"
+          bindinput="onAddUserIdInput"
+          type="number"
+        />
+      </view>
+
+      <view class="modal-actions">
+        <button class="btn btn-outline" bindtap="closeModal">取消</button>
+        <button class="btn btn-primary" bindtap="addMember" disabled="{{loading}}">
+          {{loading ? '添加中...' : '添加'}}
+        </button>
+      </view>
+    </view>
+  </view>
+</view>

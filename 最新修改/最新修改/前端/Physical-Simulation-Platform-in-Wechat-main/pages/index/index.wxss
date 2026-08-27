@@ -1,0 +1,162 @@
+/* pages/index/index.wxss */
+
+.welcome-card {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: #fff;
+}
+
+.welcome-text {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24rpx;
+}
+
+.hello {
+  font-size: 36rpx;
+  font-weight: 600;
+}
+
+.role {
+  font-size: 24rpx;
+  padding: 6rpx 16rpx;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 20rpx;
+}
+
+.stats {
+  display: flex;
+  justify-content: space-around;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-num {
+  font-size: 44rpx;
+  font-weight: 700;
+  margin-bottom: 8rpx;
+}
+
+.stat-label {
+  font-size: 24rpx;
+  opacity: 0.8;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  margin: 24rpx 0 16rpx;
+}
+
+.level-list {
+  padding-bottom: 40rpx;
+}
+
+.level-card {
+  transition: transform 0.2s;
+}
+
+.level-card:active {
+  transform: scale(0.98);
+}
+
+.level-card.locked {
+  opacity: 0.7;
+  background: #f8f9fa;
+}
+
+.level-header {
+  display: flex;
+  align-items: center;
+}
+
+.level-icon {
+  font-size: 60rpx;
+  margin-right: 20rpx;
+  width: 80rpx;
+  height: 80rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f4f8;
+  border-radius: 16rpx;
+}
+
+.level-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.level-name {
+  font-size: 32rpx;
+  font-weight: 600;
+  margin-bottom: 8rpx;
+}
+
+.level-desc {
+  font-size: 24rpx;
+  color: var(--text-light);
+}
+
+.level-status {
+  margin-left: 16rpx;
+}
+
+.status-passed {
+  color: var(--success);
+  font-size: 26rpx;
+  font-weight: 500;
+}
+
+.status-progress {
+  color: var(--primary);
+  font-size: 26rpx;
+  font-weight: 500;
+}
+
+.status-locked {
+  color: var(--text-light);
+  font-size: 26rpx;
+}
+
+.status-unlocked {
+  color: var(--warning);
+  font-size: 26rpx;
+}
+
+.level-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20rpx;
+  padding-top: 16rpx;
+  border-top: 1rpx solid var(--border);
+  font-size: 24rpx;
+  color: var(--text-light);
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80rpx 0;
+  color: var(--text-light);
+}
+
+.loading-icon {
+  width: 48rpx;
+  height: 48rpx;
+  border: 4rpx solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16rpx;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

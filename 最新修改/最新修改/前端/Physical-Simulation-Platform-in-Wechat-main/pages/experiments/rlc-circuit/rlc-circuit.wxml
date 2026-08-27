@@ -1,0 +1,50 @@
+<!-- pages/experiments/rlc-circuit/rlc-circuit.wxml -->
+<view class="experiment-page">
+  <view class="canvas-wrap">
+    <canvas type="2d" id="rlcCanvas" class="rlc-canvas"></canvas>
+    <view class="canvas-hint">f₀ = 1/(2π√(LC))，谐振频率</view>
+  </view>
+  <scroll-view class="control-panel" scroll-y enhanced show-scrollbar>
+    <view class="card params-card">
+      <view class="panel-title">实验参数</view>
+      <view class="param-item">
+        <view class="param-label">
+          <text>电感 L</text>
+          <text class="param-value">{{inductanceMH}} mH</text>
+        </view>
+        <slider min="1" max="50" step="1" value="{{inductanceMH}}"
+          bindchange="onInductanceChange" bindchanging="onInductanceChange" show-value />
+      </view>
+      <view class="param-item">
+        <view class="param-label">
+          <text>电容 C</text>
+          <text class="param-value">{{capacitanceNF}} nF</text>
+        </view>
+        <slider min="50" max="500" step="10" value="{{capacitanceNF}}"
+          bindchange="onCapacitanceChange" bindchanging="onCapacitanceChange" show-value />
+      </view>
+      <view class="calc-row">
+        <text class="calc-label">理论谐振频率 f₀：</text>
+        <text class="calc-value">{{f0Display}} Hz</text>
+      </view>
+    </view>
+    <view class="card readings-card">
+      <view class="panel-title">I-f 测量数据</view>
+      <view class="reading-row header">
+        <text>组号</text>
+        <text>频率 (Hz)</text>
+        <text>电流 (mA)</text>
+      </view>
+      <view wx:for="{{readings}}" wx:key="set_num" class="reading-row">
+        <text>{{item.set_num}}</text>
+        <input class="reading-input" type="digit" value="{{item.frequency_hz}}"
+          data-index="{{index}}" data-field="frequency_hz" bindinput="onReadingInput" />
+        <input class="reading-input" type="digit" value="{{item.current_ma}}"
+          data-index="{{index}}" data-field="current_ma" bindinput="onReadingInput" />
+      </view>
+      <button class="btn btn-primary submit-btn" bindtap="submitReadings" disabled="{{submitting}}">
+        {{submitting ? '提交中...' : '提交读数'}}
+      </button>
+    </view>
+  </scroll-view>
+</view>

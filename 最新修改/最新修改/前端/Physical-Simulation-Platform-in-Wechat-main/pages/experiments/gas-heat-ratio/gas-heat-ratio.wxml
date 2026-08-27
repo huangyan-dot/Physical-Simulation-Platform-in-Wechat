@@ -1,0 +1,38 @@
+<!-- pages/experiments/gas-heat-ratio/gas-heat-ratio.wxml -->
+<view class="experiment-page">
+  <view class="canvas-wrap">
+    <canvas type="2d" id="ghCanvas" class="gh-canvas"></canvas>
+    <view class="canvas-hint">γ = P₁ / (P₁ - P₂)，绝热膨胀法</view>
+  </view>
+  <scroll-view class="control-panel" scroll-y enhanced show-scrollbar>
+    <view class="card params-card">
+      <view class="panel-title">实验参数</view>
+      <view class="calc-row">
+        <text class="calc-label">大气压 P₀：</text>
+        <text class="calc-value">101.3 kPa</text>
+      </view>
+      <view class="calc-row">
+        <text class="calc-label">理论比热容比 γ：</text>
+        <text class="calc-value">1.40 (空气)</text>
+      </view>
+    </view>
+    <view class="card readings-card">
+      <view class="panel-title">压力测量数据</view>
+      <view class="reading-row header">
+        <text>组号</text>
+        <text>P₁ (kPa)</text>
+        <text>P₂ (kPa)</text>
+      </view>
+      <view wx:for="{{readings}}" wx:key="set_num" class="reading-row">
+        <text>{{item.set_num}}</text>
+        <input class="reading-input" type="digit" value="{{item.p1_kpa}}"
+          data-index="{{index}}" data-field="p1_kpa" bindinput="onReadingInput" />
+        <input class="reading-input" type="digit" value="{{item.p2_kpa}}"
+          data-index="{{index}}" data-field="p2_kpa" bindinput="onReadingInput" />
+      </view>
+      <button class="btn btn-primary submit-btn" bindtap="submitReadings" disabled="{{submitting}}">
+        {{submitting ? '提交中...' : '提交读数'}}
+      </button>
+    </view>
+  </scroll-view>
+</view>

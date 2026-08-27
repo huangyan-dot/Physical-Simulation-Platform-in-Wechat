@@ -1,0 +1,43 @@
+<!-- pages/experiments/sound-speed/sound-speed.wxml -->
+<view class="experiment-page">
+  <view class="canvas-wrap">
+    <canvas type="2d" id="ssCanvas" class="ss-canvas"></canvas>
+    <view class="canvas-hint">v = λ·f，驻波法</view>
+  </view>
+  <scroll-view class="control-panel" scroll-y enhanced show-scrollbar>
+    <view class="card params-card">
+      <view class="panel-title">实验参数</view>
+      <view class="param-item">
+        <view class="param-label">
+          <text>超声波频率 f</text>
+          <text class="param-value">{{freqKHz}} kHz</text>
+        </view>
+        <slider min="30" max="45" step="1" value="{{freqKHz}}"
+          bindchange="onFreqChange" bindchanging="onFreqChange" show-value />
+      </view>
+      <view class="calc-row">
+        <text class="calc-label">理论声速：</text>
+        <text class="calc-value">343.0 m/s</text>
+      </view>
+      <view class="calc-row">
+        <text class="calc-label">理论波长 λ：</text>
+        <text class="calc-value">{{lambdaStr}} mm</text>
+      </view>
+    </view>
+    <view class="card readings-card">
+      <view class="panel-title">共振点位置记录</view>
+      <view class="reading-row header">
+        <text>序号</text>
+        <text>位置(mm)</text>
+      </view>
+      <view wx:for="{{readings}}" wx:key="order" class="reading-row">
+        <text>{{item.order}}</text>
+        <input class="reading-input" type="digit" value="{{item.position_mm}}"
+          data-index="{{index}}" bindinput="onReadingInput" />
+      </view>
+      <button class="btn btn-primary submit-btn" bindtap="submitReadings" disabled="{{submitting}}">
+        {{submitting ? '提交中...' : '提交读数'}}
+      </button>
+    </view>
+  </scroll-view>
+</view>
