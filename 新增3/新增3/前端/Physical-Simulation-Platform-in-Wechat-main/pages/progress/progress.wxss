@@ -1,0 +1,130 @@
+/* pages/progress/progress.wxss */
+
+.summary-card {
+  display: flex;
+  justify-content: space-around;
+  padding: 32rpx 24rpx;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.summary-num {
+  font-size: 48rpx;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.summary-label {
+  font-size: 26rpx;
+  color: var(--text-light);
+  margin-top: 8rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  margin: 24rpx 0 16rpx;
+}
+
+.record-card,
+.student-card {
+  margin-bottom: 20rpx;
+}
+
+.record-header,
+.student-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.record-name,
+.student-name {
+  font-size: 30rpx;
+  font-weight: 600;
+}
+
+.record-status {
+  font-size: 24rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+}
+
+.record-status.locked {
+  background: #f0f0f0;
+  color: var(--text-light);
+}
+
+.record-status.unlocked {
+  background: #fff3e0;
+  color: var(--warning);
+}
+
+.record-status.in_progress {
+  background: #e3f2fd;
+  color: var(--primary);
+}
+
+.record-status.passed {
+  background: #e8f5e9;
+  color: var(--success);
+}
+
+.record-detail,
+.student-detail {
+  display: flex;
+  justify-content: space-between;
+  font-size: 24rpx;
+  color: var(--text-light);
+}
+
+.student-no {
+  font-size: 24rpx;
+  color: var(--text-light);
+}
+
+.pass {
+  color: var(--success);
+}
+
+.fail {
+  color: var(--danger);
+}
+
+.class-summary {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 24rpx;
+  padding-top: 24rpx;
+  border-top: 1rpx solid var(--border);
+}
+
+.stat-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-value {
+  font-size: 44rpx;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.picker {
+  height: 80rpx;
+  line-height: 80rpx;
+  padding: 0 20rpx;
+  background: #f8f9fa;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+}
+
+.picker.placeholder {
+  color: #999;
+}

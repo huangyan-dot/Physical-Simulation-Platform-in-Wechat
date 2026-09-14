@@ -1,0 +1,45 @@
+<!-- pages/experiments/frank-hertz/frank-hertz.wxml -->
+<view class="experiment-page">
+  <view class="canvas-wrap">
+    <canvas type="2d" id="fhCanvas" class="fh-canvas"></canvas>
+    <view class="canvas-hint">I-V 曲线峰位差 = 激发电位</view>
+  </view>
+
+  <scroll-view class="control-panel" scroll-y enhanced show-scrollbar>
+    <view class="card params-card">
+      <view class="panel-title">实验参数</view>
+      <view class="param-item">
+        <view class="param-label">
+          <text>加速电压 V_G2</text>
+          <text class="param-value">{{vg2}} V</text>
+        </view>
+        <slider min="0" max="30" step="0.1" value="{{vg2}}"
+          bindchange="onVg2Change" bindchanging="onVg2Change" show-value />
+      </view>
+      <view class="calc-row">
+        <text class="calc-label">当前电流：</text>
+        <text class="calc-value">{{currentStr}} μA</text>
+      </view>
+      <view class="calc-row">
+        <text class="calc-label">理论激发电位：</text>
+        <text class="calc-value">4.90 V</text>
+      </view>
+    </view>
+
+    <view class="card readings-card">
+      <view class="panel-title">I-V 数据记录</view>
+      <view class="reading-row header">
+        <text>电压(V)</text>
+        <text>电流(μA)</text>
+      </view>
+      <view wx:for="{{readings}}" wx:key="voltage" class="reading-row">
+        <text>{{item.voltage}}</text>
+        <input class="reading-input" type="digit" value="{{item.current}}"
+          data-index="{{index}}" bindinput="onReadingInput" />
+      </view>
+      <button class="btn btn-primary submit-btn" bindtap="submitReadings" disabled="{{submitting}}">
+        {{submitting ? '提交中...' : '提交读数'}}
+      </button>
+    </view>
+  </scroll-view>
+</view>

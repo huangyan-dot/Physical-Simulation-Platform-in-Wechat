@@ -1,0 +1,50 @@
+<!-- pages/experiments/wheatstone-bridge/wheatstone-bridge.wxml -->
+<view class="experiment-page">
+  <view class="canvas-wrap">
+    <canvas type="2d" id="wbCanvas" class="wb-canvas"></canvas>
+    <view class="canvas-hint">Rx = (R1/R2) × R3，电桥平衡</view>
+  </view>
+  <scroll-view class="control-panel" scroll-y enhanced show-scrollbar>
+    <view class="card params-card">
+      <view class="panel-title">实验参数</view>
+      <view class="param-item">
+        <view class="param-label">
+          <text>比率臂 R1/R2</text>
+          <text class="param-value">{{ratioDisplay}}</text>
+        </view>
+        <slider min="0" max="3" step="1" value="{{ratioIndex}}"
+          bindchange="onRatioChange" bindchanging="onRatioChange" />
+      </view>
+      <view class="calc-row">
+        <text class="calc-label">当前比率：</text>
+        <text class="calc-value">{{ratioDisplay}}</text>
+      </view>
+      <view class="calc-row">
+        <text class="calc-label">比较臂 R3：</text>
+        <text class="calc-value">{{r3Ohm}} Ω</text>
+      </view>
+      <view class="calc-row">
+        <text class="calc-label">理论 Rx：</text>
+        <text class="calc-value">{{rxTheoretical}} Ω</text>
+      </view>
+    </view>
+    <view class="card readings-card">
+      <view class="panel-title">测量数据记录</view>
+      <view class="reading-row header">
+        <text>组号</text>
+        <text>R3 (Ω)</text>
+        <text>Rx (Ω)</text>
+      </view>
+      <view wx:for="{{readings}}" wx:key="set_num" class="reading-row">
+        <text>{{item.set_num}}</text>
+        <input class="reading-input" type="digit" value="{{item.r3_ohm}}"
+          data-index="{{index}}" data-field="r3_ohm" bindinput="onReadingInput" />
+        <input class="reading-input" type="digit" value="{{item.rx_ohm}}"
+          data-index="{{index}}" data-field="rx_ohm" bindinput="onReadingInput" />
+      </view>
+      <button class="btn btn-primary submit-btn" bindtap="submitReadings" disabled="{{submitting}}">
+        {{submitting ? '提交中...' : '提交读数'}}
+      </button>
+    </view>
+  </scroll-view>
+</view>

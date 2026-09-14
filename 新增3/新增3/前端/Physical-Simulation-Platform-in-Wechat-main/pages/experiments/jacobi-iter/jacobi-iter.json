@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "雅可比迭代法解线性方程组",
+  "usingComponents": {
+    "conv-plot": "../../../components/conv-plot/conv-plot"
+  }
+}

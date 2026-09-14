@@ -1,0 +1,55 @@
+<!-- components/conv-plot：迭代法（雅可比/SOR）收敛过程可视化 -->
+<!-- 结构同二分/牛顿页：固定高度画布在上，工具条紧贴其下，整组在 scroll-view 外 -->
+<view class="conv-plot">
+  <view class="cp-wrap" style="height:{{ch}}px;">
+    <canvas
+      type="2d"
+      id="plot"
+      class="cp-canvas {{fullscreen ? 'cp-hide' : ''}}"
+      style="width:{{cw}}px;height:{{ch}}px;"
+      bindtouchstart="onTS"
+      catchtouchmove="onTM"
+      bindtouchend="onTE"
+      bindtouchcancel="onTE"
+    ></canvas>
+  </view>
+
+  <!-- 工具条（画布外部：避免被原生 canvas 遮挡） -->
+  <view class="cp-bar">
+    <view class="cp-tabs">
+      <view class="cp-tab {{chartMode === 'delta' ? 'on' : ''}}" bindtap="modeDelta">收敛曲线</view>
+      <view class="cp-tab {{chartMode === 'comp' ? 'on' : ''}}" bindtap="modeComp">分量轨迹</view>
+      <view class="cp-tab {{chartMode === 'space' ? 'on' : ''}}" wx:if="{{space}}" bindtap="modeSpace">三维空间</view>
+    </view>
+    <view class="cp-icons">
+      <view class="ci" bindtap="enterFs">⛶ 全屏</view>
+      <view class="ci" data-f="1.3" bindtap="zoomBy">＋</view>
+      <view class="ci" data-f="0.77" bindtap="zoomBy">－</view>
+      <view class="ci" bindtap="resetView">⟲</view>
+    </view>
+  </view>
+
+  <!-- 全屏层（fixed，独立于页面滚动；手势与小画布共用 _view） -->
+  <view class="cp-mask" wx:if="{{fullscreen}}">
+    <view class="cp-fbar">
+      <text class="cp-f-title">{{chartMode === 'delta' ? '收敛曲线 δ=max|Δx|（纵轴对数）' : (chartMode === 'comp' ? '分量轨迹 xᵢ(k)' : '三维空间：三张平面的交点即方程组的解')}}</text>
+      <view class="ci light" bindtap="exitFs">✕ 关闭</view>
+    </view>
+    <canvas
+      type="2d"
+      id="fullPlot"
+      class="cp-canvas"
+      style="width:{{fw}}px;height:{{fh}}px;"
+      bindtouchstart="onTS"
+      catchtouchmove="onTM"
+      bindtouchend="onTE"
+      bindtouchcancel="onTE"
+    ></canvas>
+    <view class="cp-fbar bottom">
+      <view class="ci light" data-f="1.3" bindtap="zoomBy">＋ 放大</view>
+      <view class="ci light" data-f="0.77" bindtap="zoomBy">－ 缩小</view>
+      <view class="ci light" bindtap="resetView">⟲ 复位</view>
+      <text class="cp-tip">{{chartMode === 'space' ? '单指拖动旋转 · 双指缩放 · 双击退出' : '单指拖动平移 · 双指缩放 · 双击退出'}}</text>
+    </view>
+  </view>
+</view>

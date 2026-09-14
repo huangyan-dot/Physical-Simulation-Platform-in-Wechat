@@ -1,0 +1,42 @@
+<!-- pages/experiments/thermal-expansion/thermal-expansion.wxml -->
+<view class="experiment-page">
+  <view class="canvas-wrap">
+    <canvas type="2d" id="teCanvas" class="te-canvas"></canvas>
+    <view class="canvas-hint">α = ΔL / (L₀ × ΔT)，线膨胀系数</view>
+  </view>
+  <scroll-view class="control-panel" scroll-y enhanced show-scrollbar>
+    <view class="card params-card">
+      <view class="panel-title">实验参数</view>
+      <view class="param-item">
+        <view class="param-label">
+          <text>初始长度 L₀</text>
+          <text class="param-value">{{initialLengthCM}} cm</text>
+        </view>
+        <slider min="30" max="80" step="1" value="{{initialLengthCM}}"
+          bindchange="onLengthChange" bindchanging="onLengthChange" show-value />
+      </view>
+      <view class="calc-row">
+        <text class="calc-label">材料：</text>
+        <text class="calc-value">铜 (α≈1.7×10⁻⁵/°C)</text>
+      </view>
+    </view>
+    <view class="card readings-card">
+      <view class="panel-title">温度-伸长量记录</view>
+      <view class="reading-row header">
+        <text>组号</text>
+        <text>温度 (°C)</text>
+        <text>伸长量 (µm)</text>
+      </view>
+      <view wx:for="{{readings}}" wx:key="set_num" class="reading-row">
+        <text>{{item.set_num}}</text>
+        <input class="reading-input" type="digit" value="{{item.temp_c}}"
+          data-index="{{index}}" data-field="temp_c" bindinput="onReadingInput" />
+        <input class="reading-input" type="digit" value="{{item.delta_length_um}}"
+          data-index="{{index}}" data-field="delta_length_um" bindinput="onReadingInput" />
+      </view>
+      <button class="btn btn-primary submit-btn" bindtap="submitReadings" disabled="{{submitting}}">
+        {{submitting ? '提交中...' : '提交读数'}}
+      </button>
+    </view>
+  </scroll-view>
+</view>

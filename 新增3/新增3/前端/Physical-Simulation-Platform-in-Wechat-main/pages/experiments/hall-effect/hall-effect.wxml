@@ -1,0 +1,105 @@
+<!-- pages/experiments/hall-effect/hall-effect.wxml -->
+<view class="experiment-page">
+  <!-- 画布区 -->
+  <view class="canvas-wrap">
+    <canvas
+      type="2d"
+      id="hallCanvas"
+      class="hall-canvas"
+    ></canvas>
+    <view class="canvas-hint">V_H = IB / (nqd)</view>
+  </view>
+
+  <scroll-view class="control-panel" scroll-y enhanced show-scrollbar>
+    <!-- 参数控制 -->
+    <view class="card params-card">
+      <view class="panel-title">实验参数</view>
+
+      <view class="param-item">
+        <view class="param-label">
+          <text>磁感应强度 B</text>
+          <text class="param-value">{{config.b_field_t}} T</text>
+        </view>
+        <slider
+          min="0.1"
+          max="0.8"
+          step="0.05"
+          value="{{config.b_field_t}}"
+          bindchange="onBFieldChange"
+          bindchanging="onBFieldChange"
+          show-value
+        />
+      </view>
+
+      <view class="param-item">
+        <view class="param-label">
+          <text>样品厚度 d</text>
+          <text class="param-value">{{config.thickness_mm}} mm</text>
+        </view>
+        <slider
+          min="0.2"
+          max="1.0"
+          step="0.05"
+          value="{{config.thickness_mm}}"
+          bindchange="onThicknessChange"
+          bindchanging="onThicknessChange"
+          show-value
+        />
+      </view>
+
+      <view class="param-item">
+        <view class="param-label">
+          <text>工作电流 I</text>
+          <text class="param-value">{{currentMA}} mA</text>
+        </view>
+        <slider
+          min="1"
+          max="10"
+          step="0.5"
+          value="{{currentMA}}"
+          bindchange="onCurrentChange"
+          bindchanging="onCurrentChange"
+          show-value
+        />
+      </view>
+
+      <view class="calc-row">
+        <text class="calc-label">理论霍尔电压：</text>
+        <text class="calc-value">{{voltageStr}} mV</text>
+      </view>
+      <view class="calc-row">
+        <text class="calc-label">载流子浓度：</text>
+        <text class="calc-value">1.00×10²¹ m⁻³</text>
+      </view>
+    </view>
+
+    <!-- 读数表 -->
+    <view class="card readings-card">
+      <view class="panel-title">霍尔电压记录</view>
+
+      <view class="reading-row header">
+        <text>电流 I(mA)</text>
+        <text>电压 V_H(mV)</text>
+      </view>
+
+      <view
+        wx:for="{{readings}}"
+        wx:key="current_a"
+        class="reading-row"
+      >
+        <text>{{item.current_ma}}</text>
+        <input
+          class="reading-input"
+          type="digit"
+          value="{{item.voltage_mv}}"
+          data-index="{{index}}"
+          bindinput="onReadingInput"
+        />
+      </view>
+
+      <button class="btn btn-primary submit-btn" bindtap="submitReadings" disabled="{{submitting}}">
+        {{submitting ? '提交中...' : '提交读数'}}
+      </button>
+    </view>
+  </scroll-view>
+</view>

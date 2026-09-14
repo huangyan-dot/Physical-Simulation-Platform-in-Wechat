@@ -1,0 +1,34 @@
+<!-- pages/experiments/lens-focal/lens-focal.wxml -->
+<view class="experiment-page">
+  <view class="canvas-wrap">
+    <canvas type="2d" id="lfCanvas" class="lf-canvas"></canvas>
+    <view class="canvas-hint">f = (L² - d²) / (4L)，贝塞尔法</view>
+  </view>
+  <scroll-view class="control-panel" scroll-y enhanced show-scrollbar>
+    <view class="card params-card">
+      <view class="panel-title">实验参数</view>
+      <view class="calc-row">
+        <text class="calc-label">理论焦距 f：</text>
+        <text class="calc-value">150.0 mm</text>
+      </view>
+    </view>
+    <view class="card readings-card">
+      <view class="panel-title">贝塞尔法测量数据</view>
+      <view class="reading-row header">
+        <text>组号</text>
+        <text>物屏距 L (mm)</text>
+        <text>位移 d (mm)</text>
+      </view>
+      <view wx:for="{{readings}}" wx:key="set_num" class="reading-row">
+        <text>{{item.set_num}}</text>
+        <input class="reading-input" type="digit" value="{{item.object_screen_dist_mm}}"
+          data-index="{{index}}" data-field="object_screen_dist_mm" bindinput="onReadingInput" />
+        <input class="reading-input" type="digit" value="{{item.lens_shift_mm}}"
+          data-index="{{index}}" data-field="lens_shift_mm" bindinput="onReadingInput" />
+      </view>
+      <button class="btn btn-primary submit-btn" bindtap="submitReadings" disabled="{{submitting}}">
+        {{submitting ? '提交中...' : '提交读数'}}
+      </button>
+    </view>
+  </scroll-view>
+</view>

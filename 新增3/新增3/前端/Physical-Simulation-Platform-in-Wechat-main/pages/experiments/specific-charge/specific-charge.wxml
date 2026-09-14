@@ -1,0 +1,42 @@
+<!-- pages/experiments/specific-charge/specific-charge.wxml -->
+<view class="experiment-page">
+  <view class="canvas-wrap">
+    <canvas type="2d" id="scCanvas" class="sc-canvas"></canvas>
+    <view class="canvas-hint">e/m = 2V / (B²·r²)，磁偏转法</view>
+  </view>
+  <scroll-view class="control-panel" scroll-y enhanced show-scrollbar>
+    <view class="card params-card">
+      <view class="panel-title">实验参数</view>
+      <view class="param-item">
+        <view class="param-label">
+          <text>磁感应强度 B</text>
+          <text class="param-value">{{bFieldMT}} mT</text>
+        </view>
+        <slider min="3" max="10" step="0.5" value="{{bFieldMT}}"
+          bindchange="onBFieldChange" bindchanging="onBFieldChange" show-value />
+      </view>
+      <view class="calc-row">
+        <text class="calc-label">理论 e/m：</text>
+        <text class="calc-value">1.759×10¹¹ C/kg</text>
+      </view>
+    </view>
+    <view class="card readings-card">
+      <view class="panel-title">电压-半径测量数据</view>
+      <view class="reading-row header">
+        <text>组号</text>
+        <text>电压 V (V)</text>
+        <text>半径 r (mm)</text>
+      </view>
+      <view wx:for="{{readings}}" wx:key="set_num" class="reading-row">
+        <text>{{item.set_num}}</text>
+        <input class="reading-input" type="digit" value="{{item.voltage_v}}"
+          data-index="{{index}}" data-field="voltage_v" bindinput="onReadingInput" />
+        <input class="reading-input" type="digit" value="{{item.radius_mm}}"
+          data-index="{{index}}" data-field="radius_mm" bindinput="onReadingInput" />
+      </view>
+      <button class="btn btn-primary submit-btn" bindtap="submitReadings" disabled="{{submitting}}">
+        {{submitting ? '提交中...' : '提交读数'}}
+      </button>
+    </view>
+  </scroll-view>
+</view>
