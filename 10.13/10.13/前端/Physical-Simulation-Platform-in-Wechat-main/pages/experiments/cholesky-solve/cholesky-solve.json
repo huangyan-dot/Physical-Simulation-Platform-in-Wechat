@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "平方根法解对称正定方程组",
+  "usingComponents": {
+    "sol-bars": "../../../components/sol-bars/sol-bars"
+  }
+}

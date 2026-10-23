@@ -1,0 +1,140 @@
+/* components/sol-bars/sol-bars.wxss
+   virtualHost 组件（无宿主节点），根节点直接是页面 flex 子项；
+   结构同 conv-plot / 二分页：固定高度画布在上、深色工具条紧贴其下。 */
+.sol-bars {
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.sb-wrap {
+  position: relative;
+  flex-shrink: 0;
+  background: #10182a;
+}
+
+.sb-canvas {
+  display: block;
+}
+
+/* 全屏时隐藏页内画布：canvas 是原生组件，会穿透全屏遮罩 */
+.sb-hide {
+  display: none;
+}
+
+/* 工具条：贴在画布下方（同 bisection 的 graph-toolbar） */
+.sb-bar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12rpx;
+  padding: 12rpx 24rpx 6rpx;
+  background: #0c1424;
+  border-top: 1rpx solid rgba(255, 255, 255, 0.06);
+}
+
+.sb-title {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.sb-tabs {
+  display: flex;
+  border: 1rpx solid rgba(126, 200, 245, 0.35);
+  border-radius: 8rpx;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.sb-tab {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 6rpx 18rpx;
+  background: rgba(255, 255, 255, 0.06);
+  line-height: 1.4;
+}
+
+.sb-tab.on {
+  background: #3498db;
+  color: #fff;
+}
+
+.sb-icons {
+  margin-left: auto;
+  display: flex;
+  gap: 8rpx;
+  flex-shrink: 0;
+}
+
+.sb-hint {
+  padding: 0 24rpx 12rpx;
+  background: #0c1424;
+  font-size: 22rpx;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.si {
+  min-width: 44rpx;
+  height: 44rpx;
+  padding: 0 14rpx;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  color: #7ec8f5;
+  border: 1rpx solid rgba(52, 152, 219, 0.45);
+  border-radius: 8rpx;
+  background: rgba(52, 152, 219, 0.18);
+}
+
+.si:active {
+  background: rgba(52, 152, 219, 0.34);
+}
+
+.sb-mask {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999;
+  background: #10182a;
+  display: flex;
+  flex-direction: column;
+}
+
+.sb-fbar {
+  height: 88rpx;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24rpx;
+  background: #0c1322;
+}
+
+.sb-fbar.bottom {
+  height: auto;
+  padding: 16rpx 24rpx;
+  justify-content: flex-end;
+}
+
+.sb-f-title {
+  font-size: 28rpx;
+  color: #fff;
+  font-weight: 600;
+}
+
+.si.light {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.sb-tip {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.55);
+}

@@ -1,0 +1,46 @@
+2026-08-25T12:34:39.919+0800	INFO	server/main.go:47	MySQL 已连接
+[GIN-debug] [WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.
+
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /ping                     --> physics-lab/backend/internal/router.New.func2 (4 handlers)
+[GIN-debug] POST   /auth/login               --> physics-lab/backend/internal/controller.(*AuthController).Login-fm (5 handlers)
+[GIN-debug] POST   /login                    --> physics-lab/backend/internal/controller.(*AuthController).Login-fm (5 handlers)
+[GIN-debug] GET    /users/:id                --> physics-lab/backend/internal/controller.(*UserController).GetUser-fm (4 handlers)
+[GIN-debug] GET    /auth/me                  --> physics-lab/backend/internal/controller.(*AuthController).Me-fm (5 handlers)
+[GIN-debug] PUT    /users/:id                --> physics-lab/backend/internal/controller.(*AuthController).CompleteProfile-fm (5 handlers)
+[GIN-debug] GET    /classes                  --> physics-lab/backend/internal/controller.(*ClassController).List-fm (5 handlers)
+[GIN-debug] POST   /classes                  --> physics-lab/backend/internal/controller.(*ClassController).Create-fm (6 handlers)
+[GIN-debug] GET    /classes/:id              --> physics-lab/backend/internal/controller.(*ClassController).Detail-fm (5 handlers)
+[GIN-debug] PUT    /classes/:id              --> physics-lab/backend/internal/controller.(*ClassController).Update-fm (5 handlers)
+[GIN-debug] DELETE /classes/:id              --> physics-lab/backend/internal/controller.(*ClassController).Delete-fm (5 handlers)
+[GIN-debug] POST   /classes/:id/members      --> physics-lab/backend/internal/controller.(*ClassController).AddMember-fm (5 handlers)
+[GIN-debug] DELETE /classes/:id/members/:userId --> physics-lab/backend/internal/controller.(*ClassController).RemoveMember-fm (5 handlers)
+[GIN-debug] GET    /levels                   --> physics-lab/backend/internal/controller.(*LevelController).List-fm (5 handlers)
+[GIN-debug] GET    /experiments              --> physics-lab/backend/internal/controller.(*LevelController).ListExperiments-fm (5 handlers)
+[GIN-debug] GET    /experiments/:id          --> physics-lab/backend/internal/controller.(*LevelController).GetExperiment-fm (5 handlers)
+[GIN-debug] GET    /progress/mine            --> physics-lab/backend/internal/controller.(*ProgressController).Mine-fm (5 handlers)
+[GIN-debug] GET    /progress/class/:classId  --> physics-lab/backend/internal/controller.(*ProgressController).Class-fm (5 handlers)
+[GIN-debug] POST   /progress/submit          --> physics-lab/backend/internal/controller.(*ProgressController).Submit-fm (7 handlers)
+[GIN-debug] GET    /admin/operation-logs     --> physics-lab/backend/internal/controller.(*AdminController).ListLogs-fm (6 handlers)
+[GIN-debug] GET    /audit/mine               --> physics-lab/backend/internal/controller.(*AdminController).MyLogs-fm (5 handlers)
+2026-08-25T12:34:39.964+0800	INFO	server/main.go:108	server listening	{"addr": ":8080"}
+[GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.
+Please check https://github.com/gin-gonic/gin/blob/master/docs/doc.md#dont-trust-all-proxies for details.
+[GIN-debug] Listening and serving HTTP on :8080
+[GIN] 2026/08/25 - 12:34:42 | 404 |       0s |             ::1 | GET      "/api/v1/levels"
+[GIN] 2026/08/25 - 12:35:15 | 400 |       0s |   192.168.31.16 | POST     "/auth/login"
+[GIN] 2026/08/25 - 12:35:15 | 401 |       0s |   192.168.31.16 | GET      "/levels"
+[GIN] 2026/08/25 - 12:35:30 | 400 |       0s |   192.168.31.16 | POST     "/auth/login"
+[GIN] 2026/08/25 - 12:35:57 | 200 |   3.53ms |   192.168.31.16 | POST     "/auth/login"
+[GIN] 2026/08/25 - 12:35:57 | 401 |       0s |   192.168.31.16 | GET      "/levels"
+[GIN] 2026/08/25 - 12:36:08 | 200 |   3.58ms |   192.168.31.16 | POST     "/auth/login"
+[GIN] 2026/08/25 - 12:36:30 | 200 |   1.56ms |   192.168.31.16 | GET      "/levels"
+[GIN] 2026/08/25 - 12:36:44 | 200 |   1.59ms |   192.168.31.16 | GET      "/levels"
+[GIN] 2026/08/25 - 12:52:01 | 401 |       0s |   192.168.31.16 | GET      "/levels"
+[GIN] 2026/08/25 - 12:52:01 | 401 |       0s |   192.168.31.16 | GET      "/progress/mine"
+[GIN] 2026/08/25 - 12:52:05 | 200 |   2.65ms |   192.168.31.16 | POST     "/auth/login"
+[GIN] 2026/08/25 - 12:52:05 | 200 |   1.61ms |   192.168.31.16 | GET      "/levels"
+[GIN] 2026/08/25 - 12:52:05 | 200 |   2.52ms |   192.168.31.16 | GET      "/progress/mine"

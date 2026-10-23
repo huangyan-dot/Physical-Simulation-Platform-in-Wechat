@@ -1,0 +1,139 @@
+<!-- pages/experiments/euler-improved/euler-improved.wxml - 改进欧拉法（数值分析 L21） -->
+<view class="experiment-page">
+  <!-- 函数图像区：蓝色短段斜率场、绿虚线精确解参考、橙实线学生折线（y 列填全时）、y₀ 起点 -->
+  <view class="canvas-wrap" style="height:{{canvasHeight}}px;">
+    <canvas
+      type="2d"
+      id="plotCanvas"
+      class="plot-canvas {{fullscreen ? 'canvas-hidden' : ''}}"
+      style="width:{{canvasWidth}}px;height:{{canvasHeight}}px;"
+      bindtouchstart="onPlotTouchStart"
+      catchtouchmove="onPlotTouchMove"
+      bindtouchend="onPlotTouchEnd"
+      bindtouchcancel="onPlotTouchEnd"
+    ></canvas>
+  </view>
+
+  <!-- 图像工具条（放在画布外部，避免被原生 canvas 遮挡） -->
+  <view class="graph-toolbar">
+    <view class="tool-btn" bindtap="enterFullscreen">⛶ 全屏</view>
+    <view class="tool-btn" bindtap="zoomBy" data-factor="1.3">＋</view>
+    <view class="tool-btn" bindtap="zoomBy" data-factor="0.77">－</view>
+    <view class="tool-btn" bindtap="resetView">⟲</view>
+    <text class="tool-hint">预测探一步，校正再收回来</text>
+  </view>
+
+  <scroll-view class="control-panel" scroll-y enhanced show-scrollbar>
+    <!-- 教师/管理员预览提示 -->
+    <view class="preview-banner" wx:if="{{isPreview}}">预览模式：可自由体验实验，提交成绩仅对学生开放</view>
+
+    <!-- 实验参数 -->
+    <view class="card params-card">
+      <view class="panel-title">实验参数</view>
+
+      <picker range="{{problemLabels}}" value="{{problemIndex}}" bindchange="onProblemChange">
+        <view class="param-row">
+          <text>ODE 题</text>
+          <text class="param-value">{{problemLabels[problemIndex]}} ▾</text>
+        </view>
+      </picker>
+
+      <view class="param-row">
+        <text>区间端点 a</text>
+        <input class="num-input" type="digit" value="{{aText}}" bindinput="onAInput" />
+      </view>
+      <view class="param-row">
+        <text>区间端点 b</text>
+        <input class="num-input" type="digit" value="{{bText}}" bindinput="onBInput" />
+      </view>
+      <view class="param-row">
+        <text>步数 n（h=(b−a)/n）</text>
+        <input class="num-input" type="number" value="{{nText}}" bindinput="onNInput" bindconfirm="applyParamsInput" />
+      </view>
+      <view class="param-hint">{{config.method_hint}}；与 L20 显式欧拉同题库，精度阶 O(h)→O(h²)；换题后 n 回落新题库内默认值</view>
+      <view class="btn-row apply-row">
+        <button class="btn btn-primary mini-btn" bindtap="applyParamsInput">应用参数（重开表格）</button>
+      </view>
+
+      <view class="param-row">
+        <text>右端函数</text>
+        <text class="param-value">{{fLabel}}</text>
+      </view>
+      <view class="param-row">
+        <text>初值 y(a)</text>
+        <text class="param-value">{{y0Label}}</text>
+      </view>
+      <view class="param-row">
+        <text>步长 h</text>
+        <text class="param-value">{{hLabel}}</text>
+      </view>
+    </view>
+
+    <!-- 预测-校正分步表（双列递推 + 选填审计输入） -->
+    <view class="card basis-card">
+      <view class="panel-title">预测-校正分步表（双列递推）</view>
+      <view class="card-note">每步两算：先用显式欧拉探出预测值 y_p，再取两端斜率 f(x_i,y_i)、f(x_{i+1},y_p) 的梯形平均做校正。h 与 x 已代入，f 求值、乘加由你完成</view>
+
+      <view wx:for="{{stepRows}}" wx:key="key" class="basis-row {{item.isFinal ? 'final-row' : ''}}">
+        <view class="basis-formula">{{item.formula}}</view>
+        <view class="basis-formula compact" wx:if="{{item.formula2}}">{{item.formula2}}</view>
+        <view class="basis-line"><text class="basis-tag">代入</text><text>{{item.substituted}}</text></view>
+        <view class="basis-input-row" wx:if="{{item.hasInput}}">
+          <text class="basis-input-label">{{item.label}} =</text>
+          <input
+            class="num-input basis-input"
+            type="digit"
+            value="{{item.input}}"
+            placeholder="选填"
+            bindinput="onYColInput"
+            data-index="{{index}}"
+          />
+        </view>
+      </view>
+      <view class="card-note">y 列选填：填全会把你的折线画上斜率场（递推对错一眼可见），并随提交记录进教师端审计日志（不参与打分），要么全填要么全空</view>
+    </view>
+
+    <!-- 最终答案与提交 -->
+    <view class="card result-card">
+      <view class="panel-title">你的递推终值 y_N</view>
+      <view class="param-row answer-row">
+        <text>终值 =</text>
+        <input
+          class="num-input"
+          type="digit"
+          value="{{valueText}}"
+          placeholder="填计算结果"
+          bindinput="onValueInput"
+        />
+      </view>
+      <view class="card-note">真值由后端按同一题、区间、步长现算——认真递推即满分；抄精确解 e≈2.718 约 49 分不过线；只做预测漏做校正（抄 L20 显式答案 2.44140625）约 34 分不过线；stiff_decay 两法均发散但数值不同，互抄也拦</view>
+      <button wx:if="{{!isPreview}}" class="btn btn-primary submit-btn" bindtap="submitReadings" disabled="{{submitting}}">
+        {{submitting ? '提交中...' : '提交成绩'}}
+      </button>
+    </view>
+  </scroll-view>
+</view>
+
+<!-- 全屏图像（点击画布或⛶进入；按钮缩放 / 单指拖动 / 双击复位） -->
+<view class="fullscreen-mask" wx:if="{{fullscreen}}">
+  <view class="full-bar full-top">
+    <text class="full-title">{{fLabel}} · 改进欧拉法</text>
+    <view class="full-btn close" bindtap="exitFullscreen">✕ 关闭</view>
+  </view>
+  <canvas
+    type="2d"
+    id="fullCanvas"
+    class="full-canvas"
+    style="width:{{fullW}}px;height:{{fullCanvasH}}px;"
+    bindtouchstart="onPlotTouchStart"
+    catchtouchmove="onPlotTouchMove"
+    bindtouchend="onPlotTouchEnd"
+    bindtouchcancel="onPlotTouchEnd"
+  ></canvas>
+  <view class="full-bar full-bottom">
+    <view class="full-btn" bindtap="zoomBy" data-factor="1.3">＋ 放大</view>
+    <view class="full-btn" bindtap="zoomBy" data-factor="0.77">－ 缩小</view>
+    <view class="full-btn" bindtap="resetView">⟲ 复位</view>
+    <text class="full-tips">拖动可平移 · 双击图像退出</text>
+  </view>
+</view>

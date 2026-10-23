@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "追赶法解三对角方程组",
+  "usingComponents": {
+    "sol-bars": "../../../components/sol-bars/sol-bars"
+  }
+}

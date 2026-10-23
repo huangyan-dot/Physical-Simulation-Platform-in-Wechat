@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "高斯消去法解线性方程组",
+  "usingComponents": {
+    "sol-bars": "../../../components/sol-bars/sol-bars"
+  }
+}

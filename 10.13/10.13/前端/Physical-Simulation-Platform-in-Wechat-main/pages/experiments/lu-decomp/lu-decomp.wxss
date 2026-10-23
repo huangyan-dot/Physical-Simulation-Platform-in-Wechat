@@ -1,0 +1,256 @@
+/* pages/experiments/lu-decomp/lu-decomp.wxss - LU 分解（Doolittle）解线性方程组（数值分析 L27）
+   版式沿用 gauss-elim 页卡片布局；L/U 并排展示、乘子审计输入为本页特有。 */
+
+.experiment-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--bg);
+}
+
+.control-panel {
+  flex: 1;
+  padding: 20rpx 24rpx;
+  box-sizing: border-box;
+}
+
+.preview-banner {
+  margin-bottom: 20rpx;
+  padding: 16rpx 20rpx;
+  background: rgba(52, 152, 219, 0.08);
+  border: 1rpx solid rgba(52, 152, 219, 0.35);
+  border-radius: 12rpx;
+  font-size: 24rpx;
+  color: var(--primary);
+}
+
+.params-card,
+.step-card,
+.history-card,
+.result-card {
+  margin-bottom: 20rpx;
+}
+
+.panel-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  margin-bottom: 20rpx;
+}
+
+.param-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16rpx 0;
+  font-size: 28rpx;
+  border-bottom: 1rpx solid var(--border);
+}
+
+.param-row:last-child {
+  border-bottom: none;
+}
+
+.param-value {
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.param-hint {
+  margin: 8rpx 0 12rpx;
+  color: var(--text-light);
+  font-size: 22rpx;
+  line-height: 1.5;
+}
+
+.param-hint.warn {
+  color: var(--warning);
+}
+
+/* 原方程组（等宽字体对齐竖式观感） */
+.eq-line {
+  padding: 8rpx 0;
+  font-family: Consolas, Menlo, monospace;
+  font-size: 28rpx;
+}
+
+/* 分解工作矩阵网格：行标 + n 列 */
+.matrix-row {
+  display: flex;
+  align-items: stretch;
+}
+
+.row-label {
+  width: 64rpx;
+  flex-shrink: 0;
+  color: var(--text-light);
+  font-size: 22rpx;
+  font-family: Consolas, Menlo, monospace;
+  display: flex;
+  align-items: center;
+}
+
+.matrix-cell {
+  flex: 1;
+  text-align: center;
+  padding: 12rpx 0;
+  font-family: Consolas, Menlo, monospace;
+  font-size: 26rpx;
+  border-bottom: 1rpx solid var(--border);
+  box-sizing: border-box;
+}
+
+.matrix-row:last-child .matrix-cell {
+  border-bottom: none;
+}
+
+/* 当前消去列（主元行与下方待消行）高亮 */
+.matrix-cell.cell-pc {
+  background: rgba(52, 152, 219, 0.12);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* 已消元完成的行置灰 */
+.matrix-row.done-row .matrix-cell {
+  color: var(--text-light);
+}
+
+/* L / U 并排展示（分解完成后） */
+.lu-flex {
+  display: flex;
+  gap: 20rpx;
+}
+
+.lu-half {
+  flex: 1;
+  min-width: 0;
+}
+
+.lu-title {
+  text-align: center;
+  font-family: Consolas, Menlo, monospace;
+  font-size: 26rpx;
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 8rpx;
+}
+
+.matrix-row.compact .matrix-cell {
+  padding: 8rpx 0;
+  font-size: 22rpx;
+}
+
+/* 前代/回代公式行 */
+.back-line {
+  padding: 12rpx 0;
+  font-family: Consolas, Menlo, monospace;
+  font-size: 26rpx;
+  border-bottom: 1rpx solid var(--border);
+}
+
+.back-line:last-of-type {
+  border-bottom: none;
+}
+
+.empty-iter {
+  padding: 24rpx 0;
+  text-align: center;
+  color: var(--text-light);
+  font-size: 26rpx;
+}
+
+/* 分解记录 */
+.step-log {
+  padding: 10rpx 0;
+  font-size: 24rpx;
+  color: var(--text-light);
+  border-bottom: 1rpx solid var(--border);
+  font-family: Consolas, Menlo, monospace;
+  line-height: 1.5;
+}
+
+.step-log:last-child {
+  border-bottom: none;
+}
+
+/* 解向量/乘子输入行 */
+.sol-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 14rpx 0;
+  border-bottom: 1rpx solid var(--border);
+}
+
+.sol-row:last-of-type {
+  border-bottom: none;
+}
+
+.sol-label {
+  width: 96rpx;
+  flex-shrink: 0;
+  font-family: Consolas, Menlo, monospace;
+  font-size: 28rpx;
+}
+
+.num-input {
+  flex: 1;
+  text-align: right;
+  color: var(--primary);
+  font-weight: 500;
+  font-family: Consolas, Menlo, monospace;
+}
+
+/* 乘子审计区小标题 */
+.audit-title {
+  margin-top: 20rpx;
+  margin-bottom: 4rpx;
+}
+
+.kv-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12rpx 0;
+  font-size: 28rpx;
+  color: var(--text-light);
+}
+
+.kv-row text:last-child {
+  color: var(--text);
+  font-weight: 500;
+  font-family: Consolas, Menlo, monospace;
+}
+
+.btn-row {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 16rpx;
+}
+
+.half-btn {
+  flex: 1;
+  font-size: 26rpx;
+  height: 80rpx;
+}
+
+.mini-btn {
+  flex: 1;
+  font-size: 26rpx;
+  height: 76rpx;
+}
+
+.root-value {
+  color: var(--success);
+  font-weight: 600;
+}
+
+.submit-btn {
+  margin-top: 16rpx;
+}
+
+/* 顶部固定图像区（直接作用于自定义组件宿主节点；不随 control-panel 滚动） */
+.iter-graph {
+  display: block;
+  width: 100%;
+  flex-shrink: 0;
+}

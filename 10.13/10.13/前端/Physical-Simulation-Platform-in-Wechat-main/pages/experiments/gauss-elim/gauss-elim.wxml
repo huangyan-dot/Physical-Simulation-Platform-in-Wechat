@@ -1,0 +1,123 @@
+<!-- pages/experiments/gauss-elim/gauss-elim.wxml -->
+<view class="experiment-page">
+  <!-- 解向量可视化：组件宿主节点即顶部固定区（flex 直接子项），回代时柱条逐根长出 -->
+  <sol-bars class="iter-graph" values="{{chartValues}}" space="{{space3d}}"></sol-bars>
+
+  <scroll-view class="control-panel" scroll-y enhanced show-scrollbar>
+    <!-- 教师/管理员预览提示 -->
+    <view class="preview-banner" wx:if="{{isPreview}}">预览模式：可自由体验实验，提交成绩仅对学生开放</view>
+
+    <!-- 实验参数 -->
+    <view class="card params-card">
+      <view class="panel-title">实验参数</view>
+
+      <picker range="{{systemLabels}}" value="{{systemIndex}}" bindchange="onSystemChange">
+        <view class="param-row">
+          <text>方程组</text>
+          <text class="param-value">{{systemLabels[systemIndex]}} ▾</text>
+        </view>
+      </picker>
+
+      <view class="param-row">
+        <text>未知数个数</text>
+        <text class="param-value">{{n}} 元</text>
+      </view>
+      <view class="param-row">
+        <text>求解容差</text>
+        <text class="param-value">{{tolText}}</text>
+      </view>
+      <view class="param-hint">{{systemDesc}}</view>
+    </view>
+
+    <!-- 题目：原方程组 -->
+    <view class="card">
+      <view class="panel-title">原方程组 Ax = b</view>
+      <view class="eq-line" wx:for="{{equations}}" wx:key="*this">{{item}}</view>
+    </view>
+
+    <!-- 增广矩阵 -->
+    <view class="card">
+      <view class="panel-title">增广矩阵 [A | b]</view>
+      <view class="matrix-row {{row.cls}}" wx:for="{{matrixRows}}" wx:for-item="row" wx:for-index="ri" wx:key="k">
+        <text class="row-label">R{{ri + 1}}</text>
+        <view class="matrix-cell {{cell.cls}}" wx:for="{{row.cells}}" wx:for-item="cell" wx:for-index="ci" wx:key="k">{{cell.t}}</view>
+      </view>
+      <view class="param-hint" wx:if="{{stage === 'elim'}}">正在消第 {{col + 1}} 列：高亮列为当前主元列，下方各行可点选主元</view>
+      <view class="param-hint" wx:elif="{{stage === 'back'}}">消元完成，已得上三角方程组，进入回代</view>
+    </view>
+
+    <!-- 消元操作：选列主元 -->
+    <view class="card step-card" wx:if="{{stage === 'elim'}}">
+      <view class="panel-title">第 {{col + 1}} 列 · 选择列主元</view>
+      <view class="param-hint">点击一行作为主元行（列主元策略：取 |a| 最大者，数值最稳定）</view>
+
+      <view
+        class="cand-row {{item.isMax ? 'cand-max' : ''}}"
+        wx:for="{{candidates}}"
+        wx:for-index="ci"
+        wx:key="row"
+        data-row="{{item.row}}"
+        bindtap="onPickPivot"
+      >
+        <text class="cand-label">R{{item.row + 1}}</text>
+        <text class="cand-abs">|a| = {{item.absText}}</text>
+        <text class="cand-tag" wx:if="{{item.isMax}}">推荐</text>
+      </view>
+
+      <view class="param-hint warn" wx:if="{{hint}}">{{hint}}</view>
+      <view class="btn-row">
+        <button class="btn btn-primary mini-btn" bindtap="onAutoRun">{{autoPlaying ? '■ 停止演示' : '自动演示（按列主元）'}}</button>
+      </view>
+      <view class="btn-row">
+        <button class="btn btn-outline mini-btn" bindtap="restart">重新开始</button>
+      </view>
+    </view>
+
+    <!-- 回代 -->
+    <view class="card step-card" wx:if="{{stage !== 'elim'}}">
+      <view class="panel-title">回代求解</view>
+      <view class="back-line" wx:for="{{backLines}}" wx:key="k">{{item.text}}</view>
+      <view wx:if="{{backLines.length === 0}}" class="empty-iter">上三角已就绪，从最后一个未知量开始回代</view>
+
+      <view class="btn-row" wx:if="{{stage === 'back'}}">
+        <button class="btn btn-primary half-btn" bindtap="onBackStep" disabled="{{autoPlaying}}">回代下一步</button>
+        <button class="btn btn-outline half-btn" bindtap="onAutoRun">{{autoPlaying ? '■ 停止演示' : '自动完成'}}</button>
+      </view>
+      <view class="btn-row" wx:if="{{stage === 'done'}}">
+        <button class="btn btn-outline mini-btn" bindtap="restart">重新开始</button>
+      </view>
+    </view>
+
+    <!-- 消元步骤记录 -->
+    <view class="card history-card" wx:if="{{history.length}}">
+      <view class="panel-title">消元记录</view>
+      <view class="step-log" wx:for="{{history}}" wx:key="*this">{{index + 1}}. {{item}}</view>
+    </view>
+
+    <!-- 求解结果与提交 -->
+    <view class="card result-card" wx:if="{{finished}}">
+      <view class="panel-title">求解结果</view>
+      <view class="param-hint">将回代所得解依次填入（提交后后端按列主元高斯现算真值评分）</view>
+
+      <view class="sol-row" wx:for="{{solutionInputs}}" wx:key="label">
+        <text class="sol-label">{{item.label}} =</text>
+        <input
+          class="num-input sol-input"
+          type="digit"
+          value="{{item.value}}"
+          data-idx="{{index}}"
+          bindinput="onSolutionInput"
+          placeholder="数值"
+        />
+      </view>
+
+      <view class="kv-row">
+        <text>回代解</text>
+        <text class="root-value">{{solutionText}}</text>
+      </view>
+      <button wx:if="{{!isPreview}}" class="btn btn-primary submit-btn" bindtap="submitReadings" disabled="{{submitting}}">
+        {{submitting ? '提交中...' : '提交成绩'}}
+      </button>
+    </view>
+  </scroll-view>
+</view>

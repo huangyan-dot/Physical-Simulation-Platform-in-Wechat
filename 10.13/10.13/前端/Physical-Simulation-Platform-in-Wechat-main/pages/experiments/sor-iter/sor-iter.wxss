@@ -1,0 +1,253 @@
+/* pages/experiments/sor-iter/sor-iter.wxss - SOR 逐次超松弛迭代法（数值分析 L15）
+   版式沿用 jacobi-iter 页卡片布局；ω 滑块为本页特有。
+   6 未知数迭代记录列多，行字号压到 22rpx（单元格 5 位有效数字）。 */
+
+.experiment-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--bg);
+}
+
+.control-panel {
+  flex: 1;
+  padding: 20rpx 24rpx;
+  box-sizing: border-box;
+}
+
+.preview-banner {
+  margin-bottom: 20rpx;
+  padding: 16rpx 20rpx;
+  background: rgba(52, 152, 219, 0.08);
+  border: 1rpx solid rgba(52, 152, 219, 0.35);
+  border-radius: 12rpx;
+  font-size: 24rpx;
+  color: var(--primary);
+}
+
+.params-card,
+.step-card,
+.history-card,
+.result-card {
+  margin-bottom: 20rpx;
+}
+
+.panel-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  margin-bottom: 20rpx;
+}
+
+.sub-title {
+  margin: 20rpx 0 12rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.param-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16rpx 0;
+  font-size: 28rpx;
+  border-bottom: 1rpx solid var(--border);
+}
+
+.param-value {
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.param-hint {
+  margin: 8rpx 0 12rpx;
+  color: var(--text-light);
+  font-size: 22rpx;
+  line-height: 1.5;
+}
+
+/* ω 松弛因子滑块 */
+.omega-slider {
+  margin: 8rpx 8rpx 0;
+}
+
+/* x₀ 初值输入行：x₀ = ( [in] [in] [in] ) */
+.x0-row {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  padding: 12rpx 0;
+}
+
+.x0-bracket {
+  color: var(--text-light);
+  font-family: Consolas, Menlo, monospace;
+  font-size: 26rpx;
+  flex-shrink: 0;
+}
+
+.x0-input {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  padding: 8rpx 4rpx;
+  border: 1rpx solid var(--border);
+  border-radius: 8rpx;
+  font-size: 26rpx;
+}
+
+/* 原方程组（等宽字体对齐竖式观感） */
+.eq-line {
+  padding: 8rpx 0;
+  font-family: Consolas, Menlo, monospace;
+  font-size: 28rpx;
+}
+
+.kv-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12rpx 0;
+  font-size: 28rpx;
+  color: var(--text-light);
+}
+
+.kv-row text:last-child {
+  color: var(--text);
+  font-weight: 500;
+  font-family: Consolas, Menlo, monospace;
+}
+
+/* 最近一步分量计算行 */
+.back-line {
+  padding: 12rpx 0;
+  font-family: Consolas, Menlo, monospace;
+  font-size: 24rpx;
+  border-bottom: 1rpx solid var(--border);
+  word-break: break-all;
+}
+
+.back-line:last-of-type {
+  border-bottom: none;
+}
+
+/* 状态条：收敛 / 发散 / 达到最大步数 */
+.status-banner {
+  margin: 16rpx 0 4rpx;
+  padding: 14rpx 20rpx;
+  border-radius: 12rpx;
+  font-size: 24rpx;
+  line-height: 1.5;
+}
+
+.status-banner.ok {
+  background: rgba(46, 204, 113, 0.1);
+  border: 1rpx solid rgba(46, 204, 113, 0.45);
+  color: var(--success);
+}
+
+.status-banner.bad {
+  background: rgba(231, 76, 60, 0.08);
+  border: 1rpx solid rgba(231, 76, 60, 0.4);
+  color: var(--danger);
+}
+
+.status-banner.warn {
+  background: rgba(243, 156, 18, 0.1);
+  border: 1rpx solid rgba(243, 156, 18, 0.45);
+  color: var(--warning);
+}
+
+/* 迭代记录表（SOR 默认 6 未知数 + k + max|Δx| 共 8 列，字号与列距收紧） */
+.iter-row {
+  display: flex;
+  padding: 10rpx 0;
+  font-size: 22rpx;
+  border-bottom: 1rpx solid var(--border);
+  font-family: Consolas, Menlo, monospace;
+}
+
+.iter-row.header {
+  color: var(--text-light);
+  font-weight: 600;
+  font-family: inherit;
+}
+
+.iter-row text {
+  flex: 1;
+  text-align: right;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.iter-row text:first-child {
+  flex: 0.4;
+  text-align: left;
+}
+
+.empty-iter {
+  padding: 24rpx 0;
+  text-align: center;
+  color: var(--text-light);
+  font-size: 26rpx;
+}
+
+/* 解向量输入行 */
+.sol-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 14rpx 0;
+  border-bottom: 1rpx solid var(--border);
+}
+
+.sol-row:last-of-type {
+  border-bottom: none;
+}
+
+.sol-label {
+  width: 96rpx;
+  flex-shrink: 0;
+  font-family: Consolas, Menlo, monospace;
+  font-size: 28rpx;
+}
+
+.num-input {
+  flex: 1;
+  text-align: right;
+  color: var(--primary);
+  font-weight: 500;
+  font-family: Consolas, Menlo, monospace;
+}
+
+.btn-row {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 16rpx;
+}
+
+.half-btn {
+  flex: 1;
+  font-size: 26rpx;
+  height: 80rpx;
+}
+
+.mini-btn {
+  flex: 1;
+  font-size: 26rpx;
+  height: 76rpx;
+}
+
+.root-value {
+  color: var(--success);
+  font-weight: 600;
+}
+
+.submit-btn {
+  margin-top: 16rpx;
+}
+
+/* 顶部固定图像区（直接作用于自定义组件宿主节点；不随 control-panel 滚动，排版同二分/牛顿页） */
+.iter-graph {
+  display: block;
+  width: 100%;
+  flex-shrink: 0;
+}

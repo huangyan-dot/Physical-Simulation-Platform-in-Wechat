@@ -1,0 +1,148 @@
+<!-- pages/experiments/sor-iter/sor-iter.wxml -->
+<view class="experiment-page">
+  <!-- 收敛可视化：组件宿主节点即顶部固定区（flex 直接子项），调 ω 后历史曲线叠加对比 -->
+  <conv-plot class="iter-graph" live="{{convLive}}" runs="{{convRuns}}" tol="{{config.tolerance}}" space="{{space3d}}"></conv-plot>
+
+  <scroll-view class="control-panel" scroll-y enhanced show-scrollbar>
+    <!-- 教师/管理员预览提示 -->
+    <view class="preview-banner" wx:if="{{isPreview}}">预览模式：可自由体验实验，提交成绩仅对学生开放</view>
+
+    <!-- 实验参数 -->
+    <view class="card params-card">
+      <view class="panel-title">实验参数</view>
+
+      <picker range="{{systemLabels}}" value="{{systemIndex}}" bindchange="onSystemChange">
+        <view class="param-row">
+          <text>方程组</text>
+          <text class="param-value">{{systemLabels[systemIndex]}} ▾</text>
+        </view>
+      </picker>
+
+      <view class="param-row">
+        <text>未知数个数</text>
+        <text class="param-value">{{n}} 元</text>
+      </view>
+      <view class="param-row">
+        <text>松弛因子 ω</text>
+        <text class="param-value">{{omegaText}}</text>
+      </view>
+      <slider
+        class="omega-slider"
+        min="{{omegaMin}}"
+        max="{{omegaMax}}"
+        step="0.05"
+        value="{{omega}}"
+        activeColor="#3498db"
+        block-size="20"
+        bindchanging="onOmegaChanging"
+        bindchange="onOmegaChange"
+      />
+      <view class="param-hint">ω=1 即高斯-赛德尔；ω∈(1,2) 超松弛加速。改 ω 会从头重开迭代，便于公平对比不同 ω 的收敛步数。</view>
+      <view class="param-row">
+        <text>收敛容差</text>
+        <text class="param-value">{{tolText}}</text>
+      </view>
+      <view class="param-row">
+        <text>最大迭代步数</text>
+        <text class="param-value">{{maxIterText}}</text>
+      </view>
+      <view class="param-hint">{{systemDesc}}</view>
+
+      <view class="sub-title">迭代初值 x₀（可改，应用后重开迭代）</view>
+      <view class="x0-row">
+        <text class="x0-bracket">x₀ = (</text>
+        <input
+          wx:for="{{x0Inputs}}"
+          wx:key="index"
+          class="num-input x0-input"
+          type="digit"
+          value="{{item}}"
+          data-idx="{{index}}"
+          bindinput="onX0Input"
+        />
+        <text class="x0-bracket">)</text>
+      </view>
+      <view class="btn-row">
+        <button class="btn btn-primary mini-btn" bindtap="applyX0">应用初值（重开迭代）</button>
+      </view>
+    </view>
+
+    <!-- 题目：原方程组 -->
+    <view class="card">
+      <view class="panel-title">原方程组 Ax = b</view>
+      <view class="eq-line" wx:for="{{equations}}" wx:key="*this">{{item}}</view>
+    </view>
+
+    <!-- SOR 迭代 -->
+    <view class="card step-card">
+      <view class="panel-title">SOR 迭代（已 {{k}} 步）</view>
+      <view class="param-hint">xᵢ⁽ᵏ⁺¹⁾ = (1−ω)·xᵢ + (ω/aᵢᵢ)·(bᵢ − Σ_{j≠i} aᵢⱼ·xⱼ) —— 就地更新：j&lt;i 用本轮新值、j&gt;i 用上轮旧值</view>
+
+      <view class="kv-row"><text>当前 x⁽ᵏ⁾</text><text>{{xText}}</text></view>
+      <view class="kv-row"><text>上步 max|Δx|</text><text>{{deltaText}}</text></view>
+
+      <view class="param-hint" wx:if="{{stepLines.length}}">最近一步各分量计算：</view>
+      <view class="back-line" wx:for="{{stepLines}}" wx:key="*this">{{item}}</view>
+
+      <view class="status-banner ok" wx:if="{{status === 'converged'}}">已收敛：max|Δx| &lt; 容差，迭代结束</view>
+      <view class="status-banner bad" wx:elif="{{status === 'diverged'}}">迭代发散：该方程组不满足对角占优（或 ω 过大），SOR 迭代不收敛——请换题、调整 ω 或 x₀</view>
+      <view class="status-banner warn" wx:elif="{{status === 'maxiter'}}">达到最大迭代步数仍未收敛（试试 ω 靠近 1.4）</view>
+
+      <view class="btn-row">
+        <button class="btn btn-primary half-btn" bindtap="onStep" disabled="{{status !== 'running'}}">迭代下一步</button>
+        <button class="btn btn-outline half-btn" bindtap="onAutoRun" disabled="{{!autoPlaying && status !== 'running'}}">{{autoPlaying ? '■ 停止演示' : '自动演示'}}</button>
+      </view>
+      <view class="btn-row">
+        <button class="btn btn-outline mini-btn" bindtap="restart">重新开始</button>
+      </view>
+    </view>
+
+    <!-- 迭代记录 -->
+    <view class="card history-card">
+      <view class="panel-title">迭代记录</view>
+      <view class="iter-row header">
+        <text wx:for="{{headerCells}}" wx:for-item="h" wx:key="*this">{{h}}</text>
+      </view>
+      <view wx:for="{{historyRows}}" wx:for-item="row" wx:key="k" class="iter-row">
+        <text>{{row.k}}</text>
+        <text wx:for="{{row.cells}}" wx:for-item="c" wx:key="k">{{c.t}}</text>
+        <text>{{row.delta}}</text>
+      </view>
+      <view wx:if="{{historyRows.length === 0}}" class="empty-iter">尚未开始迭代，点「迭代下一步」观察 x 的演化</view>
+    </view>
+
+    <!-- 求解结果与提交 -->
+    <view class="card result-card" wx:if="{{finished}}">
+      <view class="panel-title">求解结果</view>
+      <view class="param-hint">将收敛后的近似解依次填入（提交后后端按同初值与 ω 模拟 SOR 并核对迭代效率；调大 ω 加速属合法）</view>
+
+      <view class="sol-row" wx:for="{{solutionInputs}}" wx:key="label">
+        <text class="sol-label">{{item.label}} =</text>
+        <input
+          class="num-input sol-input"
+          type="digit"
+          value="{{item.value}}"
+          data-idx="{{index}}"
+          bindinput="onSolutionInput"
+          placeholder="数值"
+        />
+      </view>
+
+      <view class="kv-row">
+        <text>收敛时迭代数</text>
+        <text class="root-value">{{iterationsText}} 步</text>
+      </view>
+      <view class="kv-row">
+        <text>收敛用 ω</text>
+        <text class="root-value">{{omegaText}}</text>
+      </view>
+      <view class="kv-row">
+        <text>迭代解</text>
+        <text class="root-value">{{solutionText}}</text>
+      </view>
+      <button wx:if="{{!isPreview}}" class="btn btn-primary submit-btn" bindtap="submitReadings" disabled="{{submitting}}">
+        {{submitting ? '提交中...' : '提交成绩'}}
+      </button>
+    </view>
+  </scroll-view>
+</view>

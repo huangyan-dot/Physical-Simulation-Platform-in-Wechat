@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "LU 分解解线性方程组",
+  "usingComponents": {
+    "sol-bars": "../../../components/sol-bars/sol-bars"
+  }
+}

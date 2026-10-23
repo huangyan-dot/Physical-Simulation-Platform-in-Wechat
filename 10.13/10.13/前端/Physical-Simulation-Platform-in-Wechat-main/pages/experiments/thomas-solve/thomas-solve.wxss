@@ -1,0 +1,250 @@
+/* pages/experiments/thomas-solve/thomas-solve.wxss - 追赶法解三对角方程组（数值分析 L28）
+   版式沿用 lu-decomp 页卡片布局；带外置灰、追赶工作表为本页特有。 */
+
+.experiment-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--bg);
+}
+
+.control-panel {
+  flex: 1;
+  padding: 20rpx 24rpx;
+  box-sizing: border-box;
+}
+
+.preview-banner {
+  margin-bottom: 20rpx;
+  padding: 16rpx 20rpx;
+  background: rgba(52, 152, 219, 0.08);
+  border: 1rpx solid rgba(52, 152, 219, 0.35);
+  border-radius: 12rpx;
+  font-size: 24rpx;
+  color: var(--primary);
+}
+
+.params-card,
+.step-card,
+.result-card {
+  margin-bottom: 20rpx;
+}
+
+.panel-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  margin-bottom: 20rpx;
+}
+
+.param-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16rpx 0;
+  font-size: 28rpx;
+  border-bottom: 1rpx solid var(--border);
+}
+
+.param-row:last-child {
+  border-bottom: none;
+}
+
+.param-value {
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.param-hint {
+  margin: 8rpx 0 12rpx;
+  color: var(--text-light);
+  font-size: 22rpx;
+  line-height: 1.5;
+}
+
+/* 原方程组（等宽字体对齐竖式观感） */
+.eq-line {
+  padding: 8rpx 0;
+  font-family: Consolas, Menlo, monospace;
+  font-size: 28rpx;
+}
+
+/* 三对角满矩阵网格：行标 + n 列 */
+.matrix-row {
+  display: flex;
+  align-items: stretch;
+}
+
+.row-label {
+  width: 64rpx;
+  flex-shrink: 0;
+  color: var(--text-light);
+  font-size: 22rpx;
+  font-family: Consolas, Menlo, monospace;
+  display: flex;
+  align-items: center;
+}
+
+.matrix-cell {
+  flex: 1;
+  text-align: center;
+  padding: 12rpx 0;
+  font-family: Consolas, Menlo, monospace;
+  font-size: 26rpx;
+  border-bottom: 1rpx solid var(--border);
+  box-sizing: border-box;
+}
+
+.matrix-row:last-child .matrix-cell {
+  border-bottom: none;
+}
+
+/* 带外零元素置灰（'·'）——三对角结构的直观展示 */
+.matrix-cell.cell-zero {
+  color: var(--text-light);
+  opacity: 0.45;
+}
+
+/* 追/赶公式行 */
+.back-line {
+  padding: 12rpx 0;
+  font-family: Consolas, Menlo, monospace;
+  font-size: 24rpx;
+  border-bottom: 1rpx solid var(--border);
+  line-height: 1.6;
+}
+
+.back-line:last-of-type {
+  border-bottom: none;
+}
+
+.empty-iter {
+  padding: 24rpx 0;
+  text-align: center;
+  color: var(--text-light);
+  font-size: 26rpx;
+}
+
+/* 追赶工作表：序号 + m/β/d'/x 四列 */
+.ws-row {
+  display: flex;
+  align-items: center;
+  font-family: Consolas, Menlo, monospace;
+  font-size: 24rpx;
+}
+
+.ws-head {
+  color: var(--text-light);
+  border-bottom: 1rpx solid var(--border);
+  font-size: 22rpx;
+  padding: 8rpx 0;
+}
+
+.ws-cell {
+  flex: 1;
+  text-align: center;
+  padding: 10rpx 0;
+  border-bottom: 1rpx solid var(--border);
+}
+
+.ws-row:last-child .ws-cell {
+  border-bottom: none;
+}
+
+.ws-idx {
+  flex: 0.6;
+  color: var(--text-light);
+}
+
+.ws-x {
+  color: var(--success);
+  font-weight: 600;
+}
+
+/* 当前工作行高亮（追=下一待追行，赶=当前回代行） */
+.ws-row.ws-active .ws-cell {
+  background: rgba(52, 152, 219, 0.12);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* 解向量/审计输入行 */
+.sol-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 14rpx 0;
+  border-bottom: 1rpx solid var(--border);
+}
+
+.sol-row:last-of-type {
+  border-bottom: none;
+}
+
+.sol-label {
+  width: 96rpx;
+  flex-shrink: 0;
+  font-family: Consolas, Menlo, monospace;
+  font-size: 28rpx;
+}
+
+.num-input {
+  flex: 1;
+  text-align: right;
+  color: var(--primary);
+  font-weight: 500;
+  font-family: Consolas, Menlo, monospace;
+}
+
+/* 审计区小标题 */
+.audit-title {
+  margin-top: 20rpx;
+  margin-bottom: 4rpx;
+}
+
+.kv-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12rpx 0;
+  font-size: 28rpx;
+  color: var(--text-light);
+}
+
+.kv-row text:last-child {
+  color: var(--text);
+  font-weight: 500;
+  font-family: Consolas, Menlo, monospace;
+}
+
+.btn-row {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 16rpx;
+}
+
+.half-btn {
+  flex: 1;
+  font-size: 26rpx;
+  height: 80rpx;
+}
+
+.mini-btn {
+  flex: 1;
+  font-size: 26rpx;
+  height: 76rpx;
+}
+
+.root-value {
+  color: var(--success);
+  font-weight: 600;
+}
+
+.submit-btn {
+  margin-top: 16rpx;
+}
+
+/* 顶部固定图像区（直接作用于自定义组件宿主节点；不随 control-panel 滚动） */
+.iter-graph {
+  display: block;
+  width: 100%;
+  flex-shrink: 0;
+}

@@ -1,0 +1,151 @@
+<!-- pages/experiments/adams-pc-ode/adams-pc-ode.wxml - 阿当姆斯预报-校正法（数值分析 L23） -->
+<view class="experiment-page">
+  <!-- 函数图像区：蓝色短段斜率场、绿虚线精确解参考、橙实线学生折线（y 列填全时）、y₀ 起点 -->
+  <view class="canvas-wrap" style="height:{{canvasHeight}}px;">
+    <canvas
+      type="2d"
+      id="plotCanvas"
+      class="plot-canvas {{fullscreen ? 'canvas-hidden' : ''}}"
+      style="width:{{canvasWidth}}px;height:{{canvasHeight}}px;"
+      bindtouchstart="onPlotTouchStart"
+      catchtouchmove="onPlotTouchMove"
+      bindtouchend="onPlotTouchEnd"
+      bindtouchcancel="onPlotTouchEnd"
+    ></canvas>
+  </view>
+
+  <!-- 图像工具条（放在画布外部，避免被原生 canvas 遮挡） -->
+  <view class="graph-toolbar">
+    <view class="tool-btn" bindtap="enterFullscreen">⛶ 全屏</view>
+    <view class="tool-btn" bindtap="zoomBy" data-factor="1.3">＋</view>
+    <view class="tool-btn" bindtap="zoomBy" data-factor="0.77">－</view>
+    <view class="tool-btn" bindtap="resetView">⟲</view>
+    <text class="tool-hint">RK4 表头起步，AB4 预报 AM4 校正</text>
+  </view>
+
+  <scroll-view class="control-panel" scroll-y enhanced show-scrollbar>
+    <!-- 教师/管理员预览提示 -->
+    <view class="preview-banner" wx:if="{{isPreview}}">预览模式：可自由体验实验，提交成绩仅对学生开放</view>
+
+    <!-- 实验参数 -->
+    <view class="card params-card">
+      <view class="panel-title">实验参数</view>
+
+      <picker range="{{problemLabels}}" value="{{problemIndex}}" bindchange="onProblemChange">
+        <view class="param-row">
+          <text>ODE 题</text>
+          <text class="param-value">{{problemLabels[problemIndex]}} ▾</text>
+        </view>
+      </picker>
+
+      <view class="param-row">
+        <text>区间端点 a</text>
+        <input class="num-input" type="digit" value="{{aText}}" bindinput="onAInput" />
+      </view>
+      <view class="param-row">
+        <text>区间端点 b</text>
+        <input class="num-input" type="digit" value="{{bText}}" bindinput="onBInput" />
+      </view>
+      <view class="param-row">
+        <text>步数 n（h=(b−a)/n，须≥4）</text>
+        <input class="num-input" type="number" value="{{nText}}" bindinput="onNInput" bindconfirm="applyParamsInput" />
+      </view>
+      <view class="param-hint">{{config.method_hint}}；换题后 n 回落新题库内默认值</view>
+      <view class="btn-row apply-row">
+        <button class="btn btn-primary mini-btn" bindtap="applyParamsInput">应用参数（重开表格）</button>
+      </view>
+
+      <view class="param-row">
+        <text>右端函数</text>
+        <text class="param-value">{{fLabel}}</text>
+      </view>
+      <view class="param-row">
+        <text>初值 y(a)</text>
+        <text class="param-value">{{y0Label}}</text>
+      </view>
+      <view class="param-row">
+        <text>步长 h</text>
+        <text class="param-value">{{hLabel}}</text>
+      </view>
+    </view>
+
+    <!-- 递推分步表（表头 RK4 四探 + 阿当姆斯预报校正 + x 代入 + 选填审计输入） -->
+    <view class="card basis-card">
+      <view class="panel-title">AB4-AM4 递推分步表（f 求值与乘加留给你）</view>
+      <view class="card-note">线性多步法：前 3 步用 RK4 启动做表头（保证同阶精度），第 4 步起先用 AB4 外推预报 yᵖ，再用 AM4 内插校正一次（PECE）。x 与 h 已代入，f 求值、加权乘加由你完成</view>
+
+      <view wx:for="{{stepRows}}" wx:key="key" class="basis-row {{item.isFinal ? 'final-row' : ''}}">
+        <view class="stage-tag" wx:if="{{item.stage}}">{{item.stage}}</view>
+        <view class="basis-formula">{{item.label}} = {{item.formula}}</view>
+        <view class="basis-line"><text class="basis-tag">代入</text><text>{{item.substituted}}</text></view>
+        <block wx:if="{{item.formula2}}">
+          <view class="basis-formula compact">{{item.formula2}}</view>
+          <view class="basis-line compact"><text class="basis-tag">代入</text><text>{{item.substituted2}}</text></view>
+          <block wx:if="{{item.formula3}}">
+            <view class="basis-formula compact">{{item.formula3}}</view>
+            <view class="basis-line compact"><text class="basis-tag">代入</text><text>{{item.substituted3}}</text></view>
+            <view class="basis-formula compact">{{item.formula4}}</view>
+            <view class="basis-line compact"><text class="basis-tag">代入</text><text>{{item.substituted4}}</text></view>
+            <view class="basis-formula compact">{{item.formula5}}</view>
+            <view class="basis-line compact"><text class="basis-tag">代入</text><text>{{item.substituted5}}</text></view>
+          </block>
+        </block>
+        <view class="basis-input-row" wx:if="{{item.hasInput}}">
+          <text class="basis-input-label">{{item.label}} =</text>
+          <input
+            class="num-input basis-input"
+            type="digit"
+            value="{{item.input}}"
+            placeholder="选填"
+            bindinput="onYColInput"
+            data-index="{{index}}"
+          />
+        </view>
+      </view>
+      <view class="card-note">y 列选填：填全会把你的折线画上斜率场（递推对错一眼可见），并随提交记录进教师端审计日志（不参与打分），要么全填要么全空</view>
+    </view>
+
+    <!-- 最终答案与提交 -->
+    <view class="card result-card">
+      <view class="panel-title">你的递推终值 y_N</view>
+      <view class="param-row answer-row">
+        <text>终值 =</text>
+        <input
+          class="num-input"
+          type="digit"
+          value="{{valueText}}"
+          placeholder="填计算结果"
+          bindinput="onValueInput"
+        />
+      </view>
+      <view class="card-note">真值由后端按同一题、区间、步长现算——认真递推即满分。四阶法收敛快：抄精确解（exp_growth 的 e≈2.718）约 93 分、抄 L22 龙格-库塔答案 65/24≈2.708333 约 72 分，均能过线但非满分，过程真伪由 y 列审计暴露；抄 L21 改进欧拉答案 2.640625 约 49 分、抄 L20 显式答案 2.44140625 约 30 分均不过线；stiff_decay 刚性题多步法绝对稳定区间远小于 RK4，照常递推才得分，抄精确解 e^(−10) 直接 0 分</view>
+      <button wx:if="{{!isPreview}}" class="btn btn-primary submit-btn" bindtap="submitReadings" disabled="{{submitting}}">
+        {{submitting ? '提交中...' : '提交成绩'}}
+      </button>
+    </view>
+  </scroll-view>
+</view>
+
+<!-- 全屏图像（点击画布或⛶进入；按钮缩放 / 单指拖动 / 双击复位） -->
+<view class="fullscreen-mask" wx:if="{{fullscreen}}">
+  <view class="full-bar full-top">
+    <text class="full-title">{{fLabel}} · 阿当姆斯预报-校正法</text>
+    <view class="full-btn close" bindtap="exitFullscreen">✕ 关闭</view>
+  </view>
+  <canvas
+    type="2d"
+    id="fullCanvas"
+    class="full-canvas"
+    style="width:{{fullW}}px;height:{{fullCanvasH}}px;"
+    bindtouchstart="onPlotTouchStart"
+    catchtouchmove="onPlotTouchMove"
+    bindtouchend="onPlotTouchEnd"
+    bindtouchcancel="onPlotTouchEnd"
+  ></canvas>
+  <view class="full-bar full-bottom">
+    <view class="full-btn" bindtap="zoomBy" data-factor="1.3">＋ 放大</view>
+    <view class="full-btn" bindtap="zoomBy" data-factor="0.77">－ 缩小</view>
+    <view class="full-btn" bindtap="resetView">⟲ 复位</view>
+    <text class="full-tips">拖动可平移 · 双击图像退出</text>
+  </view>
+</view>

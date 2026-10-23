@@ -1,0 +1,155 @@
+<!-- pages/experiments/cholesky-solve/cholesky-solve.wxml - 平方根法解对称正定方程组（数值分析 L29） -->
+<view class="experiment-page">
+  <!-- 解向量可视化：组件宿主节点即顶部固定区（flex 直接子项），回代每步柱条长出一根 -->
+  <sol-bars class="iter-graph" values="{{chartValues}}"></sol-bars>
+
+  <scroll-view class="control-panel" scroll-y enhanced show-scrollbar>
+    <!-- 教师/管理员预览提示 -->
+    <view class="preview-banner" wx:if="{{isPreview}}">预览模式：可自由体验实验，提交成绩仅对学生开放</view>
+
+    <!-- 实验参数 -->
+    <view class="card params-card">
+      <view class="panel-title">实验参数</view>
+
+      <picker range="{{systemLabels}}" value="{{systemIndex}}" bindchange="onSystemChange">
+        <view class="param-row">
+          <text>方程组</text>
+          <text class="param-value">{{systemLabels[systemIndex]}} ▾</text>
+        </view>
+      </picker>
+
+      <view class="param-row">
+        <text>未知数个数</text>
+        <text class="param-value">{{n}} 元</text>
+      </view>
+      <view class="param-row">
+        <text>解法</text>
+        <text class="param-value">平方根法（不选主元）</text>
+      </view>
+      <view class="param-hint">{{systemDesc}}</view>
+    </view>
+
+    <!-- 题目：对称正定方程组 -->
+    <view class="card">
+      <view class="panel-title">对称正定方程组 Ax = b</view>
+      <view class="eq-line" wx:for="{{equations}}" wx:key="*this">{{item}}</view>
+    </view>
+
+    <!-- 对称正定阵 A（零元置灰） -->
+    <view class="card">
+      <view class="panel-title">系数阵 A（对称：aᵢⱼ = aⱼᵢ）</view>
+      <view class="matrix-row {{row.cls}}" wx:for="{{aRows}}" wx:for-item="row" wx:for-index="ri" wx:key="k">
+        <text class="row-label">R{{ri + 1}}</text>
+        <view class="matrix-cell {{cell.cls}}" wx:for="{{row.cells}}" wx:for-item="cell" wx:key="k">{{cell.t}}</view>
+      </view>
+      <view class="param-hint">对称正定保证分解根号内恒正——永不选主元，计算量约为 LU 的一半（协方差阵/刚度阵的标准解法）</view>
+    </view>
+
+    <!-- LLᵀ 分解 -->
+    <view class="card step-card" wx:if="{{stage === 'factor'}}">
+      <view class="panel-title">分解 · 第 {{factorLines.length + 1}} 行</view>
+      <view class="param-hint">主对角 lᵢᵢ = √(aᵢᵢ − Σₖ lᵢₖ²)；下方 lᵢⱼ = (aᵢⱼ − Σₖ lᵢₖ·lⱼₖ)/lⱼⱼ（j&lt;i，首列 lᵢ₁ = aᵢ₁/l₁₁）——按行长出下三角因子 L</view>
+
+      <view class="back-line" wx:for="{{factorLines}}" wx:key="k">{{item.text}}</view>
+      <view wx:if="{{factorLines.length === 0}}" class="empty-iter">从第 1 行 l₁₁ = √a₁₁ 开始分解</view>
+
+      <view class="btn-row">
+        <button class="btn btn-primary half-btn" bindtap="onFactorStep" disabled="{{autoPlaying}}">分解下一行</button>
+        <button class="btn btn-outline half-btn" bindtap="onAutoRun">{{autoPlaying ? '■ 停止演示' : '自动完成'}}</button>
+      </view>
+      <view class="btn-row">
+        <button class="btn btn-outline mini-btn" bindtap="restart">重新开始</button>
+      </view>
+    </view>
+
+    <!-- 下三角因子 L：逐行长出 -->
+    <view class="card">
+      <view class="panel-title">下三角因子 L（A = L·Lᵀ）</view>
+      <view class="matrix-row {{row.cls}}" wx:for="{{lRows}}" wx:for-item="row" wx:for-index="ri" wx:key="k">
+        <text class="row-label">R{{ri + 1}}</text>
+        <view class="matrix-cell {{cell.cls}}" wx:for="{{row.cells}}" wx:for-item="cell" wx:key="k">{{cell.t}}</view>
+      </view>
+      <view class="param-hint">L 逐行长出（当前分解行高亮）；主对角恒正，上三角全 0</view>
+    </view>
+
+    <!-- 前代 Ly = b -->
+    <view class="card step-card" wx:if="{{stage === 'forward'}}">
+      <view class="panel-title">前代 · Ly = b · 第 {{forwardLines.length + 1}} 行</view>
+      <view class="param-hint">yᵢ = (bᵢ − Σₖ lᵢₖ·yₖ)/lᵢᵢ——自上而下解下三角方程组</view>
+
+      <view class="back-line" wx:for="{{forwardLines}}" wx:key="k">{{item.text}}</view>
+
+      <view class="btn-row">
+        <button class="btn btn-primary half-btn" bindtap="onForwardStep" disabled="{{autoPlaying}}">前代下一步</button>
+        <button class="btn btn-outline half-btn" bindtap="onAutoRun">{{autoPlaying ? '■ 停止演示' : '自动完成'}}</button>
+      </view>
+    </view>
+
+    <!-- 回代 Lᵀx = y -->
+    <view class="card step-card" wx:if="{{stage === 'back'}}">
+      <view class="panel-title">回代 · Lᵀx = y · 第 {{n - backLines.length}} 行</view>
+      <view class="param-hint">末行 x_n = y_n/l_nn；其余 xᵢ = (yᵢ − Σₖ l_ki·x_k)/lᵢᵢ——自最后一个未知量往上倒推</view>
+
+      <view class="back-line" wx:for="{{backLines}}" wx:key="k">{{item.text}}</view>
+
+      <view class="btn-row">
+        <button class="btn btn-primary half-btn" bindtap="onBackStep" disabled="{{autoPlaying}}">回代下一步</button>
+        <button class="btn btn-outline half-btn" bindtap="onAutoRun">{{autoPlaying ? '■ 停止演示' : '自动完成'}}</button>
+      </view>
+    </view>
+
+    <!-- 求解结果与提交 -->
+    <view class="card result-card" wx:if="{{finished}}">
+      <view class="panel-title">求解结果</view>
+      <view class="param-hint">将回代出的解依次填入（提交后后端按平方根法现算真值评分；解与 L13/L27/L28 同源，过程真伪由 L/y 审计暴露）</view>
+
+      <view class="sol-row" wx:for="{{solutionInputs}}" wx:key="label">
+        <text class="sol-label">{{item.label}} =</text>
+        <input
+          class="num-input sol-input"
+          type="digit"
+          value="{{item.value}}"
+          data-idx="{{index}}"
+          bindinput="onSolutionInput"
+          placeholder="数值"
+        />
+      </view>
+
+      <!-- L 因子审计（选填，全或无）：下三角含主对角按行序 -->
+      <view class="param-hint audit-title">下三角因子 L（选填审计：填全会记入教师端审计日志，不参与打分）</view>
+      <view class="sol-row" wx:for="{{lInputs}}" wx:key="label">
+        <text class="sol-label">{{item.label}} =</text>
+        <input
+          class="num-input sol-input"
+          type="digit"
+          value="{{item.value}}"
+          data-idx="{{index}}"
+          bindinput="onLInput"
+          placeholder="选填"
+        />
+      </view>
+
+      <!-- 前代向量审计（选填，全或无）：y1..yn -->
+      <view class="param-hint audit-title">前代向量 y（选填审计：填全会记入教师端审计日志，不参与打分）</view>
+      <view class="sol-row" wx:for="{{yInputs}}" wx:key="label">
+        <text class="sol-label">{{item.label}} =</text>
+        <input
+          class="num-input sol-input"
+          type="digit"
+          value="{{item.value}}"
+          data-idx="{{index}}"
+          bindinput="onYInput"
+          placeholder="选填"
+        />
+      </view>
+
+      <view class="kv-row">
+        <text>回代解</text>
+        <text class="root-value">{{solutionText}}</text>
+      </view>
+      <button wx:if="{{!isPreview}}" class="btn btn-primary submit-btn" bindtap="submitReadings" disabled="{{submitting}}">
+        {{submitting ? '提交中...' : '提交成绩'}}
+      </button>
+    </view>
+  </scroll-view>
+</view>

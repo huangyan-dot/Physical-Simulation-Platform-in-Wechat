@@ -1,0 +1,148 @@
+<!-- pages/experiments/lagrange-interp/lagrange-interp.wxml - 拉格朗日插值（数值分析 L16） -->
+<view class="experiment-page">
+  <!-- 函数图像区：蓝实线 f(x)、橙虚线 P(x)、节点散点、绿虚线 x_eval -->
+  <view class="canvas-wrap" style="height:{{canvasHeight}}px;">
+    <canvas
+      type="2d"
+      id="plotCanvas"
+      class="plot-canvas {{fullscreen ? 'canvas-hidden' : ''}}"
+      style="width:{{canvasWidth}}px;height:{{canvasHeight}}px;"
+      bindtouchstart="onPlotTouchStart"
+      catchtouchmove="onPlotTouchMove"
+      bindtouchend="onPlotTouchEnd"
+      bindtouchcancel="onPlotTouchEnd"
+    ></canvas>
+  </view>
+
+  <!-- 图像工具条（放在画布外部，避免被原生 canvas 遮挡） -->
+  <view class="graph-toolbar">
+    <view class="tool-btn" bindtap="enterFullscreen">⛶ 全屏</view>
+    <view class="tool-btn" bindtap="zoomBy" data-factor="1.3">＋</view>
+    <view class="tool-btn" bindtap="zoomBy" data-factor="0.77">－</view>
+    <view class="tool-btn" bindtap="resetView">⟲</view>
+    <text class="tool-hint">P 与 f 的偏离即插值误差</text>
+  </view>
+
+  <scroll-view class="control-panel" scroll-y enhanced show-scrollbar>
+    <!-- 教师/管理员预览提示 -->
+    <view class="preview-banner" wx:if="{{isPreview}}">预览模式：可自由体验实验，提交成绩仅对学生开放</view>
+
+    <!-- 实验参数 -->
+    <view class="card params-card">
+      <view class="panel-title">实验参数</view>
+
+      <picker range="{{problemLabels}}" value="{{problemIndex}}" bindchange="onProblemChange">
+        <view class="param-row">
+          <text>插值题</text>
+          <text class="param-value">{{problemLabels[problemIndex]}} ▾</text>
+        </view>
+      </picker>
+
+      <view class="param-row">
+        <text>求值点 x_eval</text>
+        <input
+          class="num-input"
+          type="digit"
+          value="{{xEvalText}}"
+          bindinput="onXEvalInput"
+          bindconfirm="applyXEvalInput"
+        />
+      </view>
+      <view class="param-hint">{{config.x_eval_hint}}；可改求值点观察基函数与插值误差的变化</view>
+      <view class="btn-row apply-row">
+        <button class="btn btn-primary mini-btn" bindtap="applyXEvalInput">应用求值点（重算基函数）</button>
+      </view>
+
+      <view class="param-row">
+        <text>原函数（仅对照）</text>
+        <text class="param-value">{{fLabel}}</text>
+      </view>
+      <view class="param-row">
+        <text>节点数 n</text>
+        <text class="param-value">{{nodeRows.length}}</text>
+      </view>
+    </view>
+
+    <!-- 插值表 -->
+    <view class="card table-card">
+      <view class="panel-title">插值表（y_i 取自 f(x_i)）</view>
+      <view class="table-row header">
+        <text>i</text><text>x_i</text><text>y_i</text>
+      </view>
+      <view wx:for="{{nodeRows}}" wx:key="i" class="table-row">
+        <text>{{item.i}}</text><text>{{item.x}}</text><text>{{item.y}}</text>
+      </view>
+      <view class="card-note">拉格朗日插值多项式 P 由这 n 个节点唯一确定：P(x_i)=y_i，节点处与 f 重合</view>
+    </view>
+
+    <!-- 基函数分步计算 -->
+    <view class="card basis-card">
+      <view class="panel-title">基函数分步计算（在 x_eval 处）</view>
+      <view class="card-note">分子/分母乘积已展开，请自行完成除法得 L_i(x_eval)——这就是拉格朗日插值的「手工部分」</view>
+
+      <view wx:for="{{basisRows}}" wx:key="i" class="basis-row">
+        <view class="basis-formula">{{item.formula}}</view>
+        <view class="basis-line"><text class="basis-tag">分子</text><text>{{item.num}}</text></view>
+        <view class="basis-line"><text class="basis-tag">分母</text><text>{{item.den}}</text></view>
+        <view class="basis-input-row">
+          <text class="basis-input-label">L{{item.i}}(x_eval) =</text>
+          <input
+            class="num-input basis-input"
+            type="digit"
+            value="{{item.input}}"
+            placeholder="选填"
+            bindinput="onBasisInput"
+            data-index="{{index}}"
+          />
+        </view>
+      </view>
+      <view class="card-note">基函数值选填：填了将随提交记录进教师端审计日志（不参与打分），要么全填要么全空</view>
+    </view>
+
+    <!-- 加权求和与提交 -->
+    <view class="card result-card">
+      <view class="panel-title">加权求和</view>
+      <view class="sum-line">P(x_eval) = {{sumFormula}}</view>
+      <view class="sum-line substituted">P(x_eval) = {{sumSubstituted}}</view>
+      <view class="card-note">把上一步算出的各 L_i(x_eval) 代入，乘出每项并相加——切忌直接抄图像上 f 的值</view>
+
+      <view class="param-row answer-row">
+        <text>你算出的 P(x_eval)</text>
+        <input
+          class="num-input"
+          type="digit"
+          value="{{valueText}}"
+          placeholder="填计算结果"
+          bindinput="onValueInput"
+        />
+      </view>
+      <button wx:if="{{!isPreview}}" class="btn btn-primary submit-btn" bindtap="submitReadings" disabled="{{submitting}}">
+        {{submitting ? '提交中...' : '提交成绩'}}
+      </button>
+    </view>
+  </scroll-view>
+</view>
+
+<!-- 全屏图像（点击画布或⛶进入；按钮缩放 / 单指拖动 / 双击复位） -->
+<view class="fullscreen-mask" wx:if="{{fullscreen}}">
+  <view class="full-bar full-top">
+    <text class="full-title">{{fLabel}} · 拉格朗日插值</text>
+    <view class="full-btn close" bindtap="exitFullscreen">✕ 关闭</view>
+  </view>
+  <canvas
+    type="2d"
+    id="fullCanvas"
+    class="full-canvas"
+    style="width:{{fullW}}px;height:{{fullCanvasH}}px;"
+    bindtouchstart="onPlotTouchStart"
+    catchtouchmove="onPlotTouchMove"
+    bindtouchend="onPlotTouchEnd"
+    bindtouchcancel="onPlotTouchEnd"
+  ></canvas>
+  <view class="full-bar full-bottom">
+    <view class="full-btn" bindtap="zoomBy" data-factor="1.3">＋ 放大</view>
+    <view class="full-btn" bindtap="zoomBy" data-factor="0.77">－ 缩小</view>
+    <view class="full-btn" bindtap="resetView">⟲ 复位</view>
+    <text class="full-tips">拖动可平移 · 双击图像退出</text>
+  </view>
+</view>

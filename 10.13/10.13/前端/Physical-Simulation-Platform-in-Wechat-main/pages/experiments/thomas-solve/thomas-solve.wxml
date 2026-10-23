@@ -1,0 +1,152 @@
+<!-- pages/experiments/thomas-solve/thomas-solve.wxml - 追赶法解三对角方程组（数值分析 L28） -->
+<view class="experiment-page">
+  <!-- 解向量可视化：组件宿主节点即顶部固定区（flex 直接子项），赶的每步柱条长出一根 -->
+  <sol-bars class="iter-graph" values="{{chartValues}}"></sol-bars>
+
+  <scroll-view class="control-panel" scroll-y enhanced show-scrollbar>
+    <!-- 教师/管理员预览提示 -->
+    <view class="preview-banner" wx:if="{{isPreview}}">预览模式：可自由体验实验，提交成绩仅对学生开放</view>
+
+    <!-- 实验参数 -->
+    <view class="card params-card">
+      <view class="panel-title">实验参数</view>
+
+      <picker range="{{systemLabels}}" value="{{systemIndex}}" bindchange="onSystemChange">
+        <view class="param-row">
+          <text>方程组</text>
+          <text class="param-value">{{systemLabels[systemIndex]}} ▾</text>
+        </view>
+      </picker>
+
+      <view class="param-row">
+        <text>未知数个数</text>
+        <text class="param-value">{{n}} 元</text>
+      </view>
+      <view class="param-row">
+        <text>解法</text>
+        <text class="param-value">追赶法（不选主元）</text>
+      </view>
+      <view class="param-hint">{{systemDesc}}</view>
+    </view>
+
+    <!-- 题目：三对角方程组 -->
+    <view class="card">
+      <view class="panel-title">三对角方程组 Ax = d</view>
+      <view class="eq-line" wx:for="{{equations}}" wx:key="*this">{{item}}</view>
+    </view>
+
+    <!-- 三对角结构（带外全零） -->
+    <view class="card">
+      <view class="panel-title">三对角结构（带外全为零）</view>
+      <view class="matrix-row" wx:for="{{matrixRows}}" wx:for-item="row" wx:for-index="ri" wx:key="k">
+        <text class="row-label">R{{ri + 1}}</text>
+        <view class="matrix-cell {{cell.cls}}" wx:for="{{row.cells}}" wx:for-item="cell" wx:key="k">{{cell.t}}</view>
+      </view>
+      <view class="param-hint">只有三条对角线非零（下 a、主 b、上 c）——存满阵是浪费，追赶法 O(n) 直接消（满阵 LU 是 O(n³)）</view>
+    </view>
+
+    <!-- 追（Crout 消元） -->
+    <view class="card step-card" wx:if="{{stage === 'chase'}}">
+      <view class="panel-title">追 · 第 {{chaseLines.length + 2}} 行</view>
+      <view class="param-hint">乘数 mᵢ = aᵢ₋₁/βᵢ₋₁，新主对角 βᵢ = bᵢ − mᵢ·cᵢ₋₁，右端 dᵢ ← dᵢ − mᵢ·dᵢ₋₁（不选主元；对角占优/对称正定阵必安全）</view>
+
+      <view class="back-line" wx:for="{{chaseLines}}" wx:key="k">{{item.text}}</view>
+      <view wx:if="{{chaseLines.length === 0}}" class="empty-iter">β₁ = b₁ 已就绪，从第 2 行开始追</view>
+
+      <view class="btn-row">
+        <button class="btn btn-primary half-btn" bindtap="onChaseStep" disabled="{{autoPlaying}}">追下一步</button>
+        <button class="btn btn-outline half-btn" bindtap="onAutoRun">{{autoPlaying ? '■ 停止演示' : '自动完成'}}</button>
+      </view>
+      <view class="btn-row">
+        <button class="btn btn-outline mini-btn" bindtap="restart">重新开始</button>
+      </view>
+    </view>
+
+    <!-- 追赶工作表：m/β/d' 逐行追出，x 自最后一行往上赶 -->
+    <view class="card">
+      <view class="panel-title">追赶工作表</view>
+      <view class="ws-row ws-head">
+        <text class="ws-cell ws-idx">i</text>
+        <text class="ws-cell">mᵢ</text>
+        <text class="ws-cell">βᵢ</text>
+        <text class="ws-cell">d'ᵢ</text>
+        <text class="ws-cell">xᵢ</text>
+      </view>
+      <view class="ws-row {{row.cls}}" wx:for="{{worksheetRows}}" wx:for-item="row" wx:key="k">
+        <text class="ws-cell ws-idx">{{row.idx}}</text>
+        <text class="ws-cell {{row.mCls}}">{{row.m}}</text>
+        <text class="ws-cell {{row.betaCls}}">{{row.beta}}</text>
+        <text class="ws-cell {{row.ddCls}}">{{row.dd}}</text>
+        <text class="ws-cell ws-x {{row.xCls}}">{{row.x}}</text>
+      </view>
+      <view class="param-hint">第 1 行 β₁=b₁、d'₁=d₁ 为初值；m/β/d' 随追逐行长出，x 随赶倒序填入</view>
+    </view>
+
+    <!-- 赶（回代） -->
+    <view class="card step-card" wx:if="{{stage === 'sweep'}}">
+      <view class="panel-title">赶 · 第 {{n - sweepLines.length}} 行</view>
+      <view class="param-hint">末行 x_n = d'_n/β_n；其余 xᵢ = (d'ᵢ − cᵢ·xᵢ₊₁)/βᵢ——自最后一个未知量往上倒推</view>
+
+      <view class="back-line" wx:for="{{sweepLines}}" wx:key="k">{{item.text}}</view>
+
+      <view class="btn-row">
+        <button class="btn btn-primary half-btn" bindtap="onSweepStep" disabled="{{autoPlaying}}">赶下一步</button>
+        <button class="btn btn-outline half-btn" bindtap="onAutoRun">{{autoPlaying ? '■ 停止演示' : '自动完成'}}</button>
+      </view>
+    </view>
+
+    <!-- 求解结果与提交 -->
+    <view class="card result-card" wx:if="{{finished}}">
+      <view class="panel-title">求解结果</view>
+      <view class="param-hint">将赶出的解依次填入（提交后后端按追赶法现算真值评分；解与 L13/L27 同源，过程真伪由 m/β 审计暴露）</view>
+
+      <view class="sol-row" wx:for="{{solutionInputs}}" wx:key="label">
+        <text class="sol-label">{{item.label}} =</text>
+        <input
+          class="num-input sol-input"
+          type="digit"
+          value="{{item.value}}"
+          data-idx="{{index}}"
+          bindinput="onSolutionInput"
+          placeholder="数值"
+        />
+      </view>
+
+      <!-- 乘子审计（选填，全或无）：m2..mn -->
+      <view class="param-hint audit-title">乘子列 m（选填审计：填全会记入教师端审计日志，不参与打分）</view>
+      <view class="sol-row" wx:for="{{mInputs}}" wx:key="label">
+        <text class="sol-label">{{item.label}} =</text>
+        <input
+          class="num-input sol-input"
+          type="digit"
+          value="{{item.value}}"
+          data-idx="{{index}}"
+          bindinput="onMInput"
+          placeholder="选填"
+        />
+      </view>
+
+      <!-- 新主对角审计（选填，全或无）：beta1..betan -->
+      <view class="param-hint audit-title">新主对角 β（选填审计：填全会记入教师端审计日志，不参与打分）</view>
+      <view class="sol-row" wx:for="{{betaInputs}}" wx:key="label">
+        <text class="sol-label">{{item.label}} =</text>
+        <input
+          class="num-input sol-input"
+          type="digit"
+          value="{{item.value}}"
+          data-idx="{{index}}"
+          bindinput="onBetaInput"
+          placeholder="选填"
+        />
+      </view>
+
+      <view class="kv-row">
+        <text>回代解</text>
+        <text class="root-value">{{solutionText}}</text>
+      </view>
+      <button wx:if="{{!isPreview}}" class="btn btn-primary submit-btn" bindtap="submitReadings" disabled="{{submitting}}">
+        {{submitting ? '提交中...' : '提交成绩'}}
+      </button>
+    </view>
+  </scroll-view>
+</view>

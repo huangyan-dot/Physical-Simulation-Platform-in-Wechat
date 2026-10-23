@@ -1,0 +1,160 @@
+<!-- pages/experiments/lu-decomp/lu-decomp.wxml - LU 分解（Doolittle）解线性方程组（数值分析 L27） -->
+<view class="experiment-page">
+  <!-- 解向量可视化：组件宿主节点即顶部固定区（flex 直接子项），回代时柱条逐根长出 -->
+  <sol-bars class="iter-graph" values="{{chartValues}}" space="{{space3d}}"></sol-bars>
+
+  <scroll-view class="control-panel" scroll-y enhanced show-scrollbar>
+    <!-- 教师/管理员预览提示 -->
+    <view class="preview-banner" wx:if="{{isPreview}}">预览模式：可自由体验实验，提交成绩仅对学生开放</view>
+
+    <!-- 实验参数 -->
+    <view class="card params-card">
+      <view class="panel-title">实验参数</view>
+
+      <picker range="{{systemLabels}}" value="{{systemIndex}}" bindchange="onSystemChange">
+        <view class="param-row">
+          <text>方程组</text>
+          <text class="param-value">{{systemLabels[systemIndex]}} ▾</text>
+        </view>
+      </picker>
+
+      <view class="param-row">
+        <text>未知数个数</text>
+        <text class="param-value">{{n}} 元</text>
+      </view>
+      <view class="param-row">
+        <text>分解方式</text>
+        <text class="param-value">Doolittle（不选主元）</text>
+      </view>
+      <view class="param-hint">{{systemDesc}}</view>
+    </view>
+
+    <!-- 题目：原方程组 -->
+    <view class="card">
+      <view class="panel-title">原方程组 Ax = b</view>
+      <view class="eq-line" wx:for="{{equations}}" wx:key="*this">{{item}}</view>
+    </view>
+
+    <!-- 分解工作矩阵（演化为 U） -->
+    <view class="card">
+      <view class="panel-title">分解工作矩阵（逐步化为 U）</view>
+      <view class="matrix-row {{row.cls}}" wx:for="{{matrixRows}}" wx:for-item="row" wx:for-index="ri" wx:key="k">
+        <text class="row-label">R{{ri + 1}}</text>
+        <view class="matrix-cell {{cell.cls}}" wx:for="{{row.cells}}" wx:for-item="cell" wx:for-index="ci" wx:key="k">{{cell.t}}</view>
+      </view>
+      <view class="param-hint" wx:if="{{stage === 'lu'}}">正在消第 {{col + 1}} 列：乘数 m 存入 L（不交换行——与 L13 列主元高斯的差异点）</view>
+      <view class="param-hint" wx:elif="{{stage !== 'lu'}}">分解完成：A = LU，一次分解可解多组 b</view>
+    </view>
+
+    <!-- 分解操作 -->
+    <view class="card step-card" wx:if="{{stage === 'lu'}}">
+      <view class="panel-title">Doolittle 分解 · 第 {{col + 1}} 列</view>
+      <view class="param-hint">对角元作主元（不选主元）：下方各行减去乘数倍主元行，乘数 l_ik = a_ik / a_kk 存入 L</view>
+
+      <view class="back-line" wx:for="{{lLines}}" wx:key="k">{{item.text}}</view>
+
+      <view class="btn-row">
+        <button class="btn btn-primary half-btn" bindtap="onLuStep" disabled="{{autoPlaying}}">分解下一步</button>
+        <button class="btn btn-outline half-btn" bindtap="onAutoRun">{{autoPlaying ? '■ 停止演示' : '自动完成'}}</button>
+      </view>
+      <view class="btn-row">
+        <button class="btn btn-outline mini-btn" bindtap="restart">重新开始</button>
+      </view>
+    </view>
+
+    <!-- 分解结果 L / U -->
+    <view class="card" wx:if="{{stage !== 'lu'}}">
+      <view class="panel-title">L（单位下三角）与 U（上三角）</view>
+      <view class="lu-flex">
+        <view class="lu-half">
+          <view class="lu-title">L</view>
+          <view class="matrix-row compact" wx:for="{{lTable}}" wx:for-item="row" wx:key="k">
+            <view class="matrix-cell {{cell.cls}}" wx:for="{{row.cells}}" wx:for-item="cell" wx:key="k">{{cell.t}}</view>
+          </view>
+        </view>
+        <view class="lu-half">
+          <view class="lu-title">U</view>
+          <view class="matrix-row compact" wx:for="{{uTable}}" wx:for-item="row" wx:key="k">
+            <view class="matrix-cell {{cell.cls}}" wx:for="{{row.cells}}" wx:for-item="cell" wx:key="k">{{cell.t}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 前代 Ly = b -->
+    <view class="card step-card" wx:if="{{stage === 'fwd' || stage === 'back' || stage === 'done'}}">
+      <view class="panel-title">前代 Ly = b</view>
+      <view class="back-line" wx:for="{{fwdLines}}" wx:key="k">{{item.text}}</view>
+      <view wx:if="{{fwdLines.length === 0}}" class="empty-iter">L 已就绪，从 y₁ 开始自上而下前代</view>
+      <view class="kv-row" wx:if="{{yText}}">
+        <text>前代结果</text>
+        <text class="root-value">{{yText}}</text>
+      </view>
+      <view class="btn-row" wx:if="{{stage === 'fwd'}}">
+        <button class="btn btn-primary half-btn" bindtap="onFwdStep" disabled="{{autoPlaying}}">前代下一步</button>
+        <button class="btn btn-outline half-btn" bindtap="onAutoRun">{{autoPlaying ? '■ 停止演示' : '自动完成'}}</button>
+      </view>
+    </view>
+
+    <!-- 回代 Ux = y -->
+    <view class="card step-card" wx:if="{{stage === 'back' || stage === 'done'}}">
+      <view class="panel-title">回代 Ux = y</view>
+      <view class="back-line" wx:for="{{backLines}}" wx:key="k">{{item.text}}</view>
+      <view wx:if="{{backLines.length === 0 && stage === 'back'}}" class="empty-iter">U 已就绪，从最后一个未知量开始回代</view>
+
+      <view class="btn-row" wx:if="{{stage === 'back'}}">
+        <button class="btn btn-primary half-btn" bindtap="onBackStep" disabled="{{autoPlaying}}">回代下一步</button>
+        <button class="btn btn-outline half-btn" bindtap="onAutoRun">{{autoPlaying ? '■ 停止演示' : '自动完成'}}</button>
+      </view>
+      <view class="btn-row" wx:if="{{stage === 'done'}}">
+        <button class="btn btn-outline mini-btn" bindtap="restart">重新开始</button>
+      </view>
+    </view>
+
+    <!-- 分解步骤记录 -->
+    <view class="card history-card" wx:if="{{history.length}}">
+      <view class="panel-title">分解记录</view>
+      <view class="step-log" wx:for="{{history}}" wx:key="*this">{{index + 1}}. {{item}}</view>
+    </view>
+
+    <!-- 求解结果与提交 -->
+    <view class="card result-card" wx:if="{{finished}}">
+      <view class="panel-title">求解结果</view>
+      <view class="param-hint">将回代所得解依次填入（提交后后端按 Doolittle 分解现算真值评分；解与 L13 高斯同源，过程真伪由乘子审计暴露）</view>
+
+      <view class="sol-row" wx:for="{{solutionInputs}}" wx:key="label">
+        <text class="sol-label">{{item.label}} =</text>
+        <input
+          class="num-input sol-input"
+          type="digit"
+          value="{{item.value}}"
+          data-idx="{{index}}"
+          bindinput="onSolutionInput"
+          placeholder="数值"
+        />
+      </view>
+
+      <!-- 乘子审计列（选填，全或无）：l21,l31,l32,... 按行序 -->
+      <view class="param-hint audit-title">乘子列 l（选填审计：填全会记入教师端审计日志，不参与打分）</view>
+      <view class="sol-row" wx:for="{{luInputs}}" wx:key="label">
+        <text class="sol-label">{{item.label}} =</text>
+        <input
+          class="num-input sol-input"
+          type="digit"
+          value="{{item.value}}"
+          data-idx="{{index}}"
+          bindinput="onLuInput"
+          placeholder="选填"
+        />
+      </view>
+
+      <view class="kv-row">
+        <text>回代解</text>
+        <text class="root-value">{{solutionText}}</text>
+      </view>
+      <button wx:if="{{!isPreview}}" class="btn btn-primary submit-btn" bindtap="submitReadings" disabled="{{submitting}}">
+        {{submitting ? '提交中...' : '提交成绩'}}
+      </button>
+    </view>
+  </scroll-view>
+</view>

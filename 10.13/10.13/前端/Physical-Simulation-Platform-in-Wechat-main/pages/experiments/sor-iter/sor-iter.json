@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "SOR 逐次超松弛迭代法",
+  "usingComponents": {
+    "conv-plot": "../../../components/conv-plot/conv-plot"
+  }
+}

@@ -1,0 +1,286 @@
+/* pages/experiments/euler-improved/euler-improved.wxss - 改进欧拉法（数值分析 L21） */
+
+.experiment-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--bg);
+}
+
+.canvas-wrap {
+  position: relative;
+  flex-shrink: 0;
+  background: #000;
+}
+
+.plot-canvas {
+  display: block;
+}
+
+/* 全屏时隐藏页内画布：canvas 是原生组件，会穿透全屏遮罩 */
+.canvas-hidden {
+  display: none;
+}
+
+/* 图像工具条：全屏 / 放大 / 缩小 / 复位 */
+.graph-toolbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 12rpx 24rpx;
+  background: #0c1424;
+  border-bottom: 1rpx solid rgba(255, 255, 255, 0.06);
+}
+
+.tool-btn {
+  min-width: 64rpx;
+  padding: 8rpx 18rpx;
+  text-align: center;
+  border-radius: 10rpx;
+  background: rgba(52, 152, 219, 0.18);
+  border: 1rpx solid rgba(52, 152, 219, 0.45);
+  color: #7ec8f5;
+  font-size: 26rpx;
+}
+
+.tool-btn:active {
+  background: rgba(52, 152, 219, 0.34);
+}
+
+.tool-hint {
+  margin-left: auto;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 22rpx;
+}
+
+/* 全屏图像遮罩：上栏 + 画布 + 下栏，控件不压在 canvas 上 */
+.fullscreen-mask {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  background: #10182a;
+}
+
+.full-canvas {
+  display: block;
+  flex-shrink: 0;
+}
+
+.full-bar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 0 24rpx;
+  box-sizing: border-box;
+  background: #0c1424;
+}
+
+.full-top {
+  height: 44px;
+}
+
+.full-bottom {
+  height: 72px;
+}
+
+.full-title {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 26rpx;
+}
+
+.full-btn {
+  padding: 12rpx 24rpx;
+  border-radius: 12rpx;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 28rpx;
+}
+
+.full-btn:active {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.full-btn.close {
+  margin-left: auto;
+  background: rgba(231, 76, 60, 0.24);
+}
+
+.full-tips {
+  margin-left: auto;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 22rpx;
+}
+
+/* 参数说明小字 */
+.param-hint {
+  margin: -4rpx 0 12rpx;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 22rpx;
+  line-height: 1.5;
+}
+
+.control-panel {
+  flex: 1;
+  padding: 20rpx 24rpx;
+  box-sizing: border-box;
+}
+
+.preview-banner {
+  margin-bottom: 20rpx;
+  padding: 16rpx 20rpx;
+  background: rgba(52, 152, 219, 0.08);
+  border: 1rpx solid rgba(52, 152, 219, 0.35);
+  border-radius: 12rpx;
+  font-size: 24rpx;
+  color: var(--primary);
+}
+
+.params-card,
+.basis-card,
+.result-card {
+  margin-bottom: 20rpx;
+}
+
+.panel-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  margin-bottom: 20rpx;
+}
+
+.param-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16rpx 0;
+  font-size: 28rpx;
+  border-bottom: 1rpx solid var(--border);
+}
+
+.param-row:last-child {
+  border-bottom: none;
+}
+
+.param-row .num-input {
+  flex: 1;
+  margin-left: 24rpx;
+}
+
+.param-value {
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.num-input {
+  text-align: right;
+  color: var(--primary);
+  font-weight: 500;
+  font-family: Consolas, Menlo, monospace;
+}
+
+.apply-row {
+  margin-top: 8rpx;
+  margin-bottom: 12rpx;
+}
+
+.mini-btn {
+  flex: 1;
+  font-size: 26rpx;
+  height: 76rpx;
+}
+
+/* 卡片内说明 */
+.card-note {
+  margin-top: 12rpx;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 22rpx;
+  line-height: 1.6;
+}
+
+/* 预测-校正分步卡 */
+.basis-row {
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid var(--border);
+}
+
+.basis-row:last-of-type {
+  border-bottom: none;
+}
+
+/* 分步卡最后一行（递推终值 y_N）高亮 */
+.basis-row.final-row {
+  background: rgba(46, 204, 113, 0.06);
+  border-left: 4rpx solid rgba(46, 204, 113, 0.55);
+  padding-left: 16rpx;
+}
+
+.basis-formula {
+  font-family: Consolas, Menlo, monospace;
+  font-size: 24rpx;
+  color: #e6a55a;
+  margin-bottom: 10rpx;
+  word-break: break-all;
+}
+
+/* 双列公式的第二行（校正式）与首行排得更紧 */
+.basis-formula.compact {
+  margin-top: -4rpx;
+  margin-bottom: 10rpx;
+}
+
+.basis-line {
+  display: flex;
+  align-items: baseline;
+  gap: 12rpx;
+  padding: 4rpx 0;
+  font-size: 24rpx;
+  font-family: Consolas, Menlo, monospace;
+  color: var(--text);
+  word-break: break-all;
+}
+
+.basis-tag {
+  flex-shrink: 0;
+  width: 64rpx;
+  padding: 2rpx 10rpx;
+  border-radius: 8rpx;
+  background: rgba(230, 126, 34, 0.14);
+  border: 1rpx solid rgba(230, 126, 34, 0.4);
+  color: #e6a55a;
+  font-size: 20rpx;
+  text-align: center;
+  font-family: inherit;
+}
+
+.basis-input-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-top: 10rpx;
+}
+
+.basis-input-label {
+  flex-shrink: 0;
+  color: var(--text-light);
+  font-size: 26rpx;
+  font-family: Consolas, Menlo, monospace;
+}
+
+.basis-input {
+  flex: 1;
+}
+
+/* 递推终值卡 */
+.answer-row {
+  margin-top: 12rpx;
+}
+
+.submit-btn {
+  margin-top: 16rpx;
+}

@@ -1,0 +1,58 @@
+<!-- components/sol-bars：解向量条形图（回代逐根长出）；n=3 时可切三维平面交点 -->
+<!-- 结构同二分/牛顿页：固定高度画布在上，工具条紧贴其下，整组在 scroll-view 外 -->
+<view class="sol-bars">
+  <view class="sb-wrap" style="height:{{ch}}px;">
+    <canvas
+      type="2d"
+      id="plot"
+      class="sb-canvas {{fullscreen ? 'sb-hide' : ''}}"
+      style="width:{{cw}}px;height:{{ch}}px;"
+      bindtouchstart="onTS"
+      catchtouchmove="onTM"
+      bindtouchend="onTE"
+      bindtouchcancel="onTE"
+    ></canvas>
+  </view>
+
+  <!-- 工具条（画布外部） -->
+  <view class="sb-bar">
+    <view class="sb-tabs" wx:if="{{space}}">
+      <view class="sb-tab {{p3mode === 'bars' ? 'on' : ''}}" bindtap="modeBars">分量柱图</view>
+      <view class="sb-tab {{p3mode === 'space' ? 'on' : ''}}" bindtap="modeSpace">三维空间</view>
+    </view>
+    <text class="sb-title" wx:else>解向量可视化</text>
+    <view class="sb-icons">
+      <block wx:if="{{p3mode === 'space'}}">
+        <view class="si" data-f="1.3" bindtap="zoomBy">＋</view>
+        <view class="si" data-f="0.77" bindtap="zoomBy">－</view>
+        <view class="si" bindtap="reset3d">⟲</view>
+      </block>
+      <view class="si" bindtap="enterFs">⛶ 全屏</view>
+    </view>
+  </view>
+  <view class="sb-hint" wx:if="{{p3mode === 'bars'}}">回代求出的分量逐根显示，全部求出后即为方程组的解</view>
+  <view class="sb-hint" wx:else>三张平面分别对应三个方程，平面交点即解 x*（拖动可旋转视角）</view>
+
+  <view class="sb-mask" wx:if="{{fullscreen}}">
+    <view class="sb-fbar">
+      <text class="sb-f-title">{{p3mode === 'space' ? '三维空间：三平面交点即方程组的解' : '解向量分量'}}</text>
+      <view class="si light" bindtap="exitFs">✕ 关闭</view>
+    </view>
+    <canvas
+      type="2d"
+      id="fullPlot"
+      class="sb-canvas"
+      style="width:{{fw}}px;height:{{fh}}px;"
+      bindtouchstart="onTS"
+      catchtouchmove="onTM"
+      bindtouchend="onTE"
+      bindtouchcancel="onTE"
+    ></canvas>
+    <view class="sb-fbar bottom">
+      <view class="si light" wx:if="{{p3mode === 'space'}}" data-f="1.3" bindtap="zoomBy">＋ 放大</view>
+      <view class="si light" wx:if="{{p3mode === 'space'}}" data-f="0.77" bindtap="zoomBy">－ 缩小</view>
+      <view class="si light" wx:if="{{p3mode === 'space'}}" bindtap="reset3d">⟲ 复位</view>
+      <text class="sb-tip">{{p3mode === 'space' ? '单指旋转 · 双指缩放 · 双击退出' : '双击退出全屏'}}</text>
+    </view>
+  </view>
+</view>
